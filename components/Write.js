@@ -23,6 +23,8 @@ import AudioRecorder from './AudioRecoder';
 import AudioPlayer from './AudioPlayer';
 
 const STORAGE_KEY = "@note"
+const CHATBOT_URL_LOCAL_ADDRESS = 'http://172.20.10.7:5000'
+const EMOTION7_URL_LOCAL_ADDRESS = 'http://3747-34-142-171-252.ngrok-free.app'
 
 export default function Write({ navigation }){
 
@@ -30,6 +32,7 @@ export default function Write({ navigation }){
     const [text, setText] = useState("");
     const onChangeText = (payload) => setText(payload);
 
+    const [chatbotanswer, setChatbotanswer] = useState([]);
     const [textEmotion, setTextEmotion] = useState([]);
 
     useEffect(()=>{
@@ -60,56 +63,89 @@ export default function Write({ navigation }){
         }
         // save to do
         const newNote = [...note]
-        const newData = {[Date.now()]: {text, textEmotion}}
+        const newData = {[Date.now()]: {text, textEmotion, chatbotanswer}}
         newNote.unshift(newData)
         setNote(newNote);
         await saveNote(newNote);
         setText("");
+        setChatbotanswer([]);
         setTextEmotion([]);
+        console.log('addNote 함수 종료')
     }
 
+    // KoBERT 챗봇 응답
     const doKobert = async (text) => {
-        console.log('kobert 모델 실행 :', text)
+        console.log('kobert API 서버 실행 :', text)
         try {
-          const url = 'http://192.168.0.90:5000';
-          const user_input = text;
+            const url = CHATBOT_URL_LOCAL_ADDRESS;
+            const user_input = text;
       
-          const response = await axios.post(url, { user_input: user_input });
-          const responseData = response.data;
-          const transformedData = responseData.output_list.map(item => {
-            return {
-              answer: item.answer,
-              situation: item.situation,
-              softmax_value: item.softmax_value
-            };
-          });
-          
-          console.log('transformedData : ', transformedData);
-          console.log('================================================')
+            const response = await axios.post(url, { user_input: user_input });
+            const responseData = response.data;
+            const chatAnswer = responseData.output_list.map(item => {
+                return {
+                    answer: item.answer,
+                    situation: item.situation,
+                    softmax_value: item.softmax_value
+                };
+            });
+            
+            console.log('================================================')
+            console.log('chatAnswer : ', chatAnswer);
+            console.log('================================================')
 
-          return transformedData;
+            return chatAnswer;
 
         } catch (error) {
-          console.error('Request error:', error);
-          return [];
+            console.error('Request error:', error);
+            return [];
         }
     };
 
-    useEffect(()=> {
-        if (textEmotion.length > 0) {
-            console.log('useEffect 실행')
-            console.log('TextEmotion : ', textEmotion)
-            console.log('--------------------------------------------')
-            addNote();
+    //KoBERT 7가지 감정 분석
+    const do7Emotion = async(text) => {
+        console.log('do7Emotion 함수 실행');
+        try {
+            const url = EMOTION7_URL_LOCAL_ADDRESS;
+            const user_input = text;
+            
+            const response = await axios.post(url, { user_input: user_input });
+            const emotions = response.data;
+            
+            console.log('================================================')
+            console.log('emotions : ', emotions);
+            console.log('================================================')
+
+            return emotions;
+
+        } catch (error) {
+            console.error('Request error:', error);
+            return [];
         }
-    }, [textEmotion])
+    }
+
+    useEffect(()=> {
+        if ((chatbotanswer.length > 0) && (textEmotion.length > 0)) {
+            console.log('useEffect 실행')
+            console.log('chatbotanswer : ', chatbotanswer)
+            console.log('textEmotion : ', textEmotion)
+            console.log('================================================')
+            addNote();
+        } else {
+            console.log('useEffect 실행 안됩니다 addNote() 실행 안됨')
+        }
+    }, [chatbotanswer, textEmotion])
 
     const handlePress = async (text) => {
         console.log('================================================')
         console.log('handlePress 함수 실행')
-        const transformedData = await doKobert(text);
+        const chatAnswer = await doKobert(text);
+        const emotions = await do7Emotion(text);
 
-        setTextEmotion(transformedData);
+        setChatbotanswer(chatAnswer);
+        setTextEmotion(emotions.emotions);
+        console.log('chatAnswer : ', chatAnswer)
+        console.log('emotions : ', emotions)
         console.log('handlePress 함수 종료')
         console.log('================================================')
     };
@@ -168,7 +204,7 @@ export default function Write({ navigation }){
 
                         <AudioRecorder></AudioRecorder>
                         <AudioPlayer></AudioPlayer>
-                        
+
                         <SwipeListView 
                             closeOnRowPress={true}
                             closeOnScroll={true}
@@ -208,8 +244,14 @@ function Detail(props){
     const date = new Date(Number(props.selectedNoteKey));
     const formattedDate = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}`;
     const selectedNote = props.note.find(item => Object.keys(item)[0] === props.selectedNoteKey);
-    const textEmotionArray = selectedNote[props.selectedNoteKey].textEmotion
-    console.log(textEmotionArray)
+    const chatbotanswerArray = selectedNote[props.selectedNoteKey].chatbotanswer
+    const emotionArray = selectedNote[props.selectedNoteKey].textEmotion
+    const emotionCounts = emotionArray.reduce((counts, emotion) => {
+        counts[emotion] = (counts[emotion] || 0) + 1;
+        return counts;
+    }, {});
+    console.log(chatbotanswerArray)
+    console.log(emotionArray)
     return (
         <SafeAreaView style={{ flex: 1 , backgroundColor: 'rgba(245, 255, 250, 0.5)' }}>
             <Text style={styles.detailHeader}>일기 상세 페이지</Text>
@@ -223,7 +265,7 @@ function Detail(props){
                 <View style={styles.detailChatbotAnswer}>
                     <Text>
                         {
-                            textEmotionArray
+                            chatbotanswerArray
                             .sort((a, b) => b.softmax_value - a.softmax_value) // softmax_value를 내림차순으로 정렬
                             .reduce((uniqueAnswers, currentAnswer) => {
                                 const isAmbiguous = uniqueAnswers.some((a) => a.situation === '모호함');
@@ -239,7 +281,7 @@ function Detail(props){
                                 }
                                 return uniqueAnswers;
                             }, [])
-                            .slice(0, Math.min(textEmotionArray.length, 2)) // 배열 길이가 2 이상이면 최대 2개의 요소만 선택
+                            .slice(0, Math.min(chatbotanswerArray.length, 2)) // 배열 길이가 2 이상이면 최대 2개의 요소만 선택
                             .join(' ') || "긍정적인 내용인 것 같아서 위로해 드릴게 없네요!"
                         }
                     </Text>
@@ -249,7 +291,7 @@ function Detail(props){
                 <View style={styles.detailChatbotSituation}>
                     <Text>
                         {
-                            textEmotionArray
+                            chatbotanswerArray
                             .sort((a, b) => b.softmax_value - a.softmax_value) // softmax_value를 내림차순으로 정렬
                             .reduce((uniqueSituations, currentAnswer) => {
                                 const isAmbiguous = uniqueSituations.some((a) => a === '모호함');
@@ -265,10 +307,26 @@ function Detail(props){
                                 }
                                 return uniqueSituations;
                             }, [])
-                            .slice(0, Math.min(textEmotionArray.length, 2)) // 배열 길이가 2 이상이면 최대 2개의 요소만 선택
+                            .slice(0, Math.min(chatbotanswerArray.length, 2)) // 배열 길이가 2 이상이면 최대 2개의 요소만 선택
                             .join(', ') || "긍정적인 내용인것 같아요"
                         }
                     </Text>
+                </View>
+
+                <Text style={styles.detailChatbotSituationHeader}>문장별 감정 분석</Text>
+                <View style={styles.detailChatbotSituation}>
+                <Text>
+                    {
+                        Object.entries(emotionCounts).map(([emotion, count], index, arr) => (
+                            <>
+                                {emotion}: {count}문장
+                                {index !== arr.length - 1 && '\n'}
+                            </>
+                        ))
+                    }
+                </Text>
+
+
                 </View>
             </View>
 
