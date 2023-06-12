@@ -30,7 +30,7 @@ const LANGUAGE = 'ko-KR';
 const STORAGE_KEY = "@note"
 const CHATBOT_URL_LOCAL_ADDRESS = 'http://172.20.10.7:5000'
 const EMOTION7_URL_LOCAL_ADDRESS = 'https://d0b0-34-32-147-229.ngrok-free.app'
-const TEXTDEPRESS_URL_LOCAL_ADDRESS = 'http://5c02-35-245-198-40.ngrok-free.app'
+const TEXTDEPRESS_URL_LOCAL_ADDRESS = 'http://cd08-35-245-198-40.ngrok-free.app'
 
 
 export default function Write({ navigation }){
@@ -44,7 +44,7 @@ export default function Write({ navigation }){
     const [textDepress, setTextDepress] = useState([]);
     const [audioData, setAudioData] = useState();
     const [isFetching, setIsFetching] = useState(false);
-    const [transedText, setTransedText] = useState('');
+    const [transedText, setTransedText] = useState("");
 
     useEffect(()=>{
         console.log('Write 실행')
@@ -113,7 +113,9 @@ export default function Write({ navigation }){
           duration: getDurationFormatted(status.durationMillis),
           status : status
         }
-    
+        const transcript = await getTranscription(audio);
+        setTransedText(transcript);
+        setText(transcript);
         setAudioData(audio);
         setRecording();
         console.log('audio 객체 저장 성공')
@@ -135,16 +137,20 @@ export default function Write({ navigation }){
                 // could be anything 
                 name: 'speech2text'
             });
+
             const response = await fetch(config.CLOUD_FUNCTION_URL, {
                 method: 'POST',
                 body: formData
             });
+
             const data = await response.json();
-            setTransedText(data.transcript);
-            } catch(error) {
-            console.log('There was an error', error);
-            }
             setIsFetching(false);
+            return data.transcript;
+
+            } catch(error) {
+                console.log('There was an error', error);
+                return
+            }
     }
 
     const recordingOptions = {
@@ -284,7 +290,7 @@ export default function Write({ navigation }){
 
         setChatbotanswer(chatAnswer);
         setTextEmotion(emotions.emotions);
-        setTextDepress(text_depress.depress);
+        setTextDepress(text_depress.depress_list);
         console.log('chatAnswer : ', chatAnswer)
         console.log('emotions : ', emotions)
         console.log('text_depress : ', text_depress)
@@ -370,7 +376,6 @@ export default function Write({ navigation }){
                             closeOnScroll={true}
                             data={note}
                             renderItem={ data => (
-                                
                                     <View style={styles.note}>
                                         <TouchableHighlight 
                                             activeOpacity={0.9}
