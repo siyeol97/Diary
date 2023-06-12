@@ -124,6 +124,20 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 10,
         fontSize: 17
+    },
+
+    recordBtn: {
+        backgroundColor: 'lightgrey',
+        marginTop: -8,
+        marginBottom: 15,
+        marginHorizontal: 18
+    },
+
+    stopRecordBtn: {
+        backgroundColor: 'red',
+        marginTop: -8,
+        marginBottom: 15,
+        marginHorizontal: 18
     }
 })
 
