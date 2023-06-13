@@ -20,6 +20,7 @@ import {SwipeListView} from 'react-native-swipe-list-view';
 import axios from 'axios';
 import styles from './Writestyle';
 import { Audio } from 'expo-av';
+import * as FileSystem from 'expo-file-system';
 
 //GOOGLE STT API 설정
 const ENCODING = 'LINEAR16';
@@ -27,10 +28,12 @@ const SAMPLE_RATE_HERTZ = 41000;
 const LANGUAGE = 'ko-KR';
 
 //모델 돌리는 API 서버 설정
-const STORAGE_KEY = "@note"
-const CHATBOT_URL_LOCAL_ADDRESS = 'http://172.20.10.7:5000'
-const EMOTION7_URL_LOCAL_ADDRESS = 'https://d0b0-34-32-147-229.ngrok-free.app'
-const TEXTDEPRESS_URL_LOCAL_ADDRESS = 'http://cd08-35-245-198-40.ngrok-free.app'
+const STORAGE_KEY = "@note";
+const CHATBOT_URL_LOCAL_ADDRESS = 'http://192.168.0.90:5000';
+const EMOTION7_URL_LOCAL_ADDRESS = "https://263d-35-237-55-145.ngrok-free.app";
+const GOOGLE_STT_API_ADDRESS = 'http://192.168.0.90:5000/audio';
+const TEXTDEPRESS_URL_LOCAL_ADDRESS = "https://106e-35-232-82-135.ngrok-free.app";
+const AUDIODEPRESS_URL_LOCAL_ADDRESS = 'http://79de-175-214-183-100.ngrok-free.app';
 
 
 export default function Write({ navigation }){
@@ -45,6 +48,7 @@ export default function Write({ navigation }){
     const [audioData, setAudioData] = useState();
     const [isFetching, setIsFetching] = useState(false);
     const [transedText, setTransedText] = useState("");
+    const [audioDepress, setAudioDepress] = useState();
 
     useEffect(()=>{
         console.log('Write 실행')
@@ -64,40 +68,49 @@ export default function Write({ navigation }){
         if (parsedNote === null) {
             setNote([]);
         } else {
+            console.log('======================일기 데이터 전부 불러오기========================')
+            console.log(parsedNote);
             setNote(parsedNote);
+            console.log('======================일기 데이터 전부 불러오기 완료========================')
         }
     };
+
+    //시간 표시
+    function getDurationFormatted(millis) {
+        const minutes = millis / 1000 / 60;
+        const minutesDisplay = Math.floor(minutes);
+        const seconds = Math.round((minutes - minutesDisplay) * 60);
+        const secondsDisplay = seconds < 10 ? `0${seconds}` : seconds;
+        return `${minutesDisplay}:${secondsDisplay}`;
+    }
 
     //========================== GOOGLE STT ==========================
     const [recording, setRecording] = useState();
     const [isRecording, setIsRecording] = useState(false);
 
     const startRecording = async () => {
-        console.log('startRecording 함수 시작!!\n===========================')
-        const { status } = await Permissions.askAsync(Permissions.AUDIO_RECORDING);
-        if (status !== 'granted') return;
         setIsRecording(true);
-      
-        await Audio.setAudioModeAsync({
-          allowsRecordingIOS: true,
-          interruptionModeIOS: Audio.INTERRUPTION_MODE_IOS_DO_NOT_MIX,
-          playsInSilentModeIOS: true,
-          shouldDuckAndroid: true,
-          interruptionModeAndroid: Audio.INTERRUPTION_MODE_ANDROID_DO_NOT_MIX,
-          playThroughEarpieceAndroid: true,
-        });
-
-        const recordingInstance = new Audio.Recording();
+        console.log('isRecording : ', isRecording);
         try {
-          await recordingInstance.prepareToRecordAsync(recordingOptions);
-          await recordingInstance.startAsync();
-          console.log('녹음 성공')
-        } catch (error) {
-          console.log(error);
-          stopRecording();
+          console.log('Requesting permissions..');
+          await Audio.requestPermissionsAsync();
+          await Audio.setAudioModeAsync({
+            allowsRecordingIOS: true,
+            playsInSilentModeIOS: true,
+          });
+    
+          console.log('Starting recording..');
+          const recording = new Audio.Recording();
+          await recording.prepareToRecordAsync(recordingOptions);
+          await recording.startAsync();
+    
+          setRecording(recording);
+    
+        } catch (err) {
+          console.error('Failed to start recording', err);
         }
-        setRecording(recordingInstance);
-    }
+      }
+    
 
     const stopRecording = async() => {
         console.log('stopRecording 함수 시작!!\n===========================')
@@ -113,45 +126,41 @@ export default function Write({ navigation }){
           duration: getDurationFormatted(status.durationMillis),
           status : status
         }
+        console.log('audio', audio);
         const transcript = await getTranscription(audio);
-        setTransedText(transcript);
+        const audioDepress = await getAudioDepress(audio);
+
+        console.log('transcript : ', transcript)
+        console.log('audioDepress : ', audioDepress)
         setText(transcript);
         setAudioData(audio);
+        setAudioDepress(audioDepress);
         setRecording();
         console.log('audio 객체 저장 성공')
+        console.log('Recording 완료');
+        return { transcript, audioDepress };
     }
 
-
-    //GOOGLE STT API 요청
-    
+    //Flask api 서버로 보냄, GOOGLE STT API 요청
     const getTranscription = async (audio) => {
+        const apiUrl = GOOGLE_STT_API_ADDRESS; // Flask API 서버의 업로드 엔드포인트 URL
+
         try {
-            setIsFetching(true);
-            const info = await FileSystem.getInfoAsync(audio.file);
-            console.log(`FILE INFO: ${JSON.stringify(info)}`);
-            const uri = info.uri;
             const formData = new FormData();
             formData.append('file', {
-                uri,
-                type: 'audio/x-wav',
-                // could be anything 
-                name: 'speech2text'
-            });
+                uri: audio.file, // 저장된 오디오 파일의 경로
+                type: 'audio/x-wav', // 오디오 파일의 MIME 타입에 맞게 설정 (wav 파일의 경우)
+                name: 'recording.wav' // 오디오 파일의 이름 (원하는 이름으로 설정)
+            })
 
-            const response = await fetch(config.CLOUD_FUNCTION_URL, {
-                method: 'POST',
-                body: formData
-            });
+            const response = await axios.post(apiUrl, formData);
+            return response.data.transcript;
+        } catch (error) {
+            console.error('구글 STT API 요청 오류:', error);
+            throw error;
+        }
+    };
 
-            const data = await response.json();
-            setIsFetching(false);
-            return data.transcript;
-
-            } catch(error) {
-                console.log('There was an error', error);
-                return
-            }
-    }
 
     const recordingOptions = {
         android: {
@@ -182,7 +191,7 @@ export default function Write({ navigation }){
         }
         // save to do
         const newNote = [...note]
-        const newData = {[Date.now()]: {text, textEmotion, chatbotanswer, textDepress, audio:audioData}}
+        const newData = {[Date.now()]: {text, textEmotion, chatbotanswer, textDepress, audio:audioData, audioDepress}}
         newNote.unshift(newData)
         setNote(newNote);
         await saveNote(newNote);
@@ -191,6 +200,7 @@ export default function Write({ navigation }){
         setTextEmotion([]);
         setTextDepress([]);
         setAudioData();
+        setAudioDepress();
         console.log('addNote 함수 종료')
     }
 
@@ -218,7 +228,7 @@ export default function Write({ navigation }){
             return chatAnswer;
 
         } catch (error) {
-            console.error('Request error:', error);
+            console.error('KoBERT 챗봇 서버 오류 :', error);
             return [];
         }
     };
@@ -240,7 +250,7 @@ export default function Write({ navigation }){
             return emotions;
 
         } catch (error) {
-            console.error('Request error:', error);
+            console.error('KoBERT 7가지 감정 분류 오류 :', error);
             return [];
         }
     }
@@ -262,23 +272,46 @@ export default function Write({ navigation }){
             return depress;
 
         } catch (error) {
-            console.error('Request error:', error);
+            console.error('텍스트 우울 분석 오류 :', error);
             return [];
         }
     }
 
+    //Flask api 서버로 보냄, 음성 우울 분석
+    const getAudioDepress = async (audio) => {
+        const apiUrl = AUDIODEPRESS_URL_LOCAL_ADDRESS; // Flask API 서버의 업로드 엔드포인트 URL
+
+        try {
+            const formData = new FormData();
+            formData.append('file', {
+                uri: audio.file, // 저장된 오디오 파일의 경로
+                type: 'audio/x-wav', // 오디오 파일의 MIME 타입에 맞게 설정 (wav 파일의 경우)
+                name: 'recording.wav' // 오디오 파일의 이름 (원하는 이름으로 설정)
+            })
+
+            const response = await axios.post(apiUrl, formData);
+            console.log('오디오 우울 분석 결과 : ', response)
+            return response.data;
+        } catch (error) {
+            console.error('음성 우울 분석 API 서버 요청 오류:', error);
+            throw error;
+        }
+    };
+
     useEffect(()=> {
-        if ((chatbotanswer.length > 0) && (textEmotion.length > 0) && (textDepress.length > 0)) {
+        console.log('chatbotanswer.length :', chatbotanswer.length, 'textEmotion.length :', textEmotion.length, 'textDepress.length :', textDepress.length, 'audioDepress:', audioDepress)
+        if ((chatbotanswer.length > 0) && (textEmotion.length > 0) && (textDepress.length > 0) && (audioDepress)) {
             console.log('useEffect 실행')
             console.log('chatbotanswer : ', chatbotanswer)
             console.log('textEmotion : ', textEmotion)
             console.log('textDepress : ', textDepress)
+            console.log('audioDepress : ', audioDepress)
             console.log('================================================')
             addNote();
         } else {
             console.log('useEffect 실행 안됩니다 addNote() 실행 안됨')
         }
-    }, [chatbotanswer, textEmotion, textDepress])
+    }, [chatbotanswer, textEmotion, textDepress, audioDepress])
 
     const handlePress = async (text) => {
         console.log('================================================')
@@ -287,16 +320,23 @@ export default function Write({ navigation }){
         const chatAnswer = await doKobert(text);
         const emotions = await do7Emotion(text);
         const text_depress = await doTextDepress(text);
-
-        setChatbotanswer(chatAnswer);
-        setTextEmotion(emotions.emotions);
-        setTextDepress(text_depress.depress_list);
         console.log('chatAnswer : ', chatAnswer)
         console.log('emotions : ', emotions)
         console.log('text_depress : ', text_depress)
+        setChatbotanswer(chatAnswer);
+        setTextEmotion(emotions.emotions);
+        setTextDepress(text_depress.depress_list);
+        
         console.log('handlePress 함수 종료')
         console.log('================================================')
     };
+
+    const saveAudioNote = async() => {
+        console.log('saveAudioNote 함수 실행')
+        const { transcript, response } = await stopRecording();
+        await handlePress(transcript);
+        console.log('saveAudioNote 함수 종료\n=======================')
+    }
       
 
     const deleteNote = async(key) => {
@@ -358,14 +398,14 @@ export default function Write({ navigation }){
                                 <View style={styles.stopRecordBtn}>
                                     <Button
                                         title="녹음 종료"
-                                        onPress={() => console.log('Simple Button pressed')}
+                                        onPress={() => { console.log('녹음 종료 버튼 눌림'); saveAudioNote(); }}
                                     />
                                 </View>
                             ) : (
                                 <View style={styles.recordBtn}>
                                     <Button
                                         title="음성일기 쓰기"
-                                        onPress={() => console.log('Simple Button pressed')}
+                                        onPress={() => {console.log('녹음 시작 버튼 눌림'); startRecording(); }}
                                     />
                                 </View>
                             )
@@ -413,6 +453,7 @@ function Detail(props){
     const chatbotanswerArray = selectedNote[props.selectedNoteKey].chatbotanswer
     const emotionArray = selectedNote[props.selectedNoteKey].textEmotion
     const textDepressArray = selectedNote[props.selectedNoteKey].textDepress
+    const audioDepress = selectedNote[props.selectedNoteKey].audioDepress
     const emotionCounts = emotionArray.reduce((counts, emotion) => {
         counts[emotion] = (counts[emotion] || 0) + 1;
         return counts;
@@ -502,7 +543,7 @@ function Detail(props){
                         }
                     </View>
 
-                    <Text style={styles.detailChatbotSituationHeader}>문장별 우울 분석</Text>
+                    <Text style={styles.detailChatbotSituationHeader}>문장별 텍스트 우울 분석</Text>
                     <View style={styles.detailChatbotSituation}>
                         {
                             Object.entries(textDepressCount).map(([textdepress, count], index, arr) => (
@@ -511,6 +552,15 @@ function Detail(props){
                                     {index !== arr.length - 1 && '\n'}
                                 </Text>
                             ))
+                        }
+                    </View>
+
+                    <Text style={styles.detailChatbotSituationHeader}>문장별 음성 우울 분석</Text>
+                    <View style={styles.detailChatbotSituation}>
+                        {
+                            <Text>
+                                {audioDepress.depress}
+                            </Text>
                         }
                     </View>
                 </View>
