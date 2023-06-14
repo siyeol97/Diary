@@ -29,11 +29,13 @@ const LANGUAGE = 'ko-KR';
 
 //모델 돌리는 API 서버 설정
 const STORAGE_KEY = "@note";
-const CHATBOT_URL_LOCAL_ADDRESS = 'http://192.168.0.90:5000';
-const EMOTION7_URL_LOCAL_ADDRESS = "https://263d-35-237-55-145.ngrok-free.app";
-const GOOGLE_STT_API_ADDRESS = 'http://192.168.0.90:5000/audio';
-const TEXTDEPRESS_URL_LOCAL_ADDRESS = "https://106e-35-232-82-135.ngrok-free.app";
-const AUDIODEPRESS_URL_LOCAL_ADDRESS = 'http://79de-175-214-183-100.ngrok-free.app';
+const CHATBOT_URL_LOCAL_ADDRESS = 'http://172.20.10.7:5000';
+const GOOGLE_STT_API_ADDRESS = 'http://172.20.10.7:5000/audio';
+
+const EMOTION7_URL_LOCAL_ADDRESS = "https://1405-34-171-187-207.ngrok-free.app";
+const TEXTDEPRESS_URL_LOCAL_ADDRESS = "https://7e50-35-221-32-166.ngrok-free.app";
+
+const AUDIODEPRESS_URL_LOCAL_ADDRESS = 'http://ce9e-121-174-96-133.ngrok-free.app';
 
 
 export default function Write({ navigation }){
@@ -42,9 +44,9 @@ export default function Write({ navigation }){
     const [text, setText] = useState("");
     const onChangeText = (payload) => setText(payload);
 
-    const [chatbotanswer, setChatbotanswer] = useState([]);
-    const [textEmotion, setTextEmotion] = useState([]);
-    const [textDepress, setTextDepress] = useState([]);
+    const [chatbotanswer, setChatbotanswer] = useState();
+    const [textEmotion, setTextEmotion] = useState();
+    const [textDepress, setTextDepress] = useState();
     const [audioData, setAudioData] = useState();
     const [isFetching, setIsFetching] = useState(false);
     const [transedText, setTransedText] = useState("");
@@ -299,8 +301,7 @@ export default function Write({ navigation }){
     };
 
     useEffect(()=> {
-        console.log('chatbotanswer.length :', chatbotanswer.length, 'textEmotion.length :', textEmotion.length, 'textDepress.length :', textDepress.length, 'audioDepress:', audioDepress)
-        if ((chatbotanswer.length > 0) && (textEmotion.length > 0) && (textDepress.length > 0) && (audioDepress)) {
+        if (chatbotanswer && textEmotion && textDepress) {
             console.log('useEffect 실행')
             console.log('chatbotanswer : ', chatbotanswer)
             console.log('textEmotion : ', textEmotion)
@@ -311,11 +312,12 @@ export default function Write({ navigation }){
         } else {
             console.log('useEffect 실행 안됩니다 addNote() 실행 안됨')
         }
-    }, [chatbotanswer, textEmotion, textDepress, audioDepress])
+    }, [chatbotanswer, textEmotion, textDepress])
 
     const handlePress = async (text) => {
         console.log('================================================')
         console.log('handlePress 함수 실행')
+        console.log('text : ', text)
 
         const chatAnswer = await doKobert(text);
         const emotions = await do7Emotion(text);
@@ -339,13 +341,14 @@ export default function Write({ navigation }){
     }
       
 
-    const deleteNote = async(key) => {
+    const deleteNote = async(rowMap, key) => {
         Alert.alert("일기를 삭제합니다.", "삭제하시겠습니까?",[
             { text: "취소" },
             { 
                 text: "삭제",
                 style: "destructive", 
                 onPress: async()=> {
+                    closeRow(rowMap, key);
                     let newNote = [...note]
                     newNote = newNote.filter((item) => Object.keys(item)[0] !== key);
                     setNote(newNote);
@@ -358,7 +361,7 @@ export default function Write({ navigation }){
     const formatDate = (timestamp) => {
         const date = new Date(Number(timestamp));
         // 원하는 날짜 포맷 적용
-        const formattedDate = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}`;
+        const formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
         return formattedDate;
     };
 
@@ -369,12 +372,26 @@ export default function Write({ navigation }){
         setSelectedNoteKey(key);
     }
 
+    const closeRow = (rowMap, rowKey) => {
+        if (rowMap[rowKey]) {
+            rowMap[rowKey].closeRow();
+        }
+    };
+
+    const playAudio = async (audioFileURL) => {
+        const sound = new Audio.Sound();
+        await sound.loadAsync({ uri: audioFileURL });
+        console.log('녹음파일 재생 !!');
+        await sound.replayAsync();
+        console.log('녹음파일 재생 종료 !!')
+    }
+
     return (
         <SafeAreaView style={{ flex: 1 }}>
             {
                 //일기 클릭하면 Detail 페이지
                 selectedNoteKey ? (
-                    <Detail selectedNoteKey={selectedNoteKey} setSelectedNoteKey={setSelectedNoteKey} note={note} />
+                    <Detail selectedNoteKey={selectedNoteKey} setSelectedNoteKey={setSelectedNoteKey} note={note} playAudio={playAudio}/>
                 )
                 //평소에는 일기 목록 페이지 & 일기쓰기
                 : (
@@ -412,8 +429,6 @@ export default function Write({ navigation }){
                         }
                         
                         <SwipeListView 
-                            closeOnRowPress={true}
-                            closeOnScroll={true}
                             data={note}
                             renderItem={ data => (
                                     <View style={styles.note}>
@@ -431,8 +446,8 @@ export default function Write({ navigation }){
                             )}
                             renderHiddenItem={(data, rowMap) => (
                                 <View style={styles.swipeHiddenItem}>
-                                    <TouchableOpacity onPress={()=>deleteNote(Object.keys(data.item)[0])}>
-                                            <Icon style={styles.swipeIcon} name='ios-close' size={40} color='red' />
+                                    <TouchableOpacity onPress={()=>deleteNote(rowMap, Object.keys(data.item)[0])}>
+                                        <Icon style={styles.swipeIcon} name='ios-close' size={40} color='red' />
                                     </TouchableOpacity>
                                 </View>
                             )}
@@ -448,13 +463,13 @@ export default function Write({ navigation }){
 // Detail 페이지
 function Detail(props){
     const date = new Date(Number(props.selectedNoteKey));
-    const formattedDate = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}`;
+    const formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
     const selectedNote = props.note.find(item => Object.keys(item)[0] === props.selectedNoteKey);
     const chatbotanswerArray = selectedNote[props.selectedNoteKey].chatbotanswer
-    const emotionArray = selectedNote[props.selectedNoteKey].textEmotion
+    const textemotionArray = selectedNote[props.selectedNoteKey].textEmotion
     const textDepressArray = selectedNote[props.selectedNoteKey].textDepress
     const audioDepress = selectedNote[props.selectedNoteKey].audioDepress
-    const emotionCounts = emotionArray.reduce((counts, emotion) => {
+    const textemotionCounts = textemotionArray.reduce((counts, emotion) => {
         counts[emotion] = (counts[emotion] || 0) + 1;
         return counts;
     }, {});
@@ -462,23 +477,39 @@ function Detail(props){
         counts[textdepress] = (counts[textdepress] || 0) + 1;
         return counts;
     }, {});
+    
     console.log('============================================================')
     console.log('KEY : ', props.selectedNoteKey)
     console.log('데이터 : ', selectedNote[props.selectedNoteKey])
-    console.log('챗봇 응답 : ', chatbotanswerArray)
-    console.log('텍스트 7가지 감정분류 : ', emotionArray)
-    console.log('텍스트 우울 판별 : ', textDepressArray)
     console.log('============================================================')
     return (
         <SafeAreaView style={{ flex: 1 , backgroundColor: 'rgba(245, 255, 250, 0.5)' }}>
-            <Text style={styles.detailHeader}>일기 상세 페이지</Text>
+            <View style={styles.detailHeader}>
+                <TouchableOpacity onPress={()=>{props.setSelectedNoteKey(null)}}>
+                    <Icon name='md-arrow-back' size={35} color='green' />
+                </TouchableOpacity>
+                <Text style={styles.detailHeader}>일기 상세 페이지</Text>
+            </View>
+
             <View style={styles.detailNote}>
                 <Text style={styles.detailDate}>{formattedDate} 작성</Text>
                 <Text selectable={true}>{selectedNote[props.selectedNoteKey].text}</Text>
+                    {
+                        selectedNote[props.selectedNoteKey].audio ? (
+                            <View style={styles.playaudio}>
+                                <TouchableOpacity onPress={()=>{props.playAudio(selectedNote[props.selectedNoteKey].audio.file)}}>
+                                    <Icon name='ios-play' size={35} color='green' />
+                                </TouchableOpacity>
+                            </View>
+                        ) : (
+                            null
+                        )
+                    }
             </View>
 
             <ScrollView>
                 <View style={styles.detailChatbot}>
+
                     <Text style={styles.detailChatbotAnswerHeader}>위로형 챗봇 응답 - 부정적인 내용일 때</Text>
                     <View style={styles.detailChatbotAnswer}>
                         <Text>
@@ -493,7 +524,7 @@ function Detail(props){
                                     if (
                                     (!uniqueAnswers.some((a) => a.answer === currentAnswer.answer) ||
                                         (isAmbiguous && currentAnswer.situation !== '모호함')) &&
-                                    currentAnswer.softmax_value > 0.15 // softmax_value가 0.15 이상인 경우에만 추가
+                                    currentAnswer.softmax_value > 0.10 // softmax_value가 0.15 이상인 경우에만 추가
                                     ) {
                                     uniqueAnswers.push(currentAnswer.answer);
                                     }
@@ -519,7 +550,7 @@ function Detail(props){
                                     if (
                                     (!uniqueSituations.includes(currentAnswer.situation) ||
                                         (isAmbiguous && currentAnswer.situation !== '모호함')) &&
-                                    currentAnswer.softmax_value > 0.15 // softmax_value가 0.15 이상인 경우에만 추가
+                                    currentAnswer.softmax_value > 0.10 // softmax_value가 0.15 이상인 경우에만 추가
                                     ) {
                                     uniqueSituations.push(currentAnswer.situation);
                                     }
@@ -534,7 +565,7 @@ function Detail(props){
                     <Text style={styles.detailChatbotSituationHeader}>문장별 감정 분석</Text>
                     <View style={styles.detailChatbotSituation}>
                         {
-                            Object.entries(emotionCounts).map(([emotion, count], index, arr) => (
+                            Object.entries(textemotionCounts).map(([emotion, count], index, arr) => (
                                 <Text key={index}>
                                     {emotion}: {count}문장
                                     {index !== arr.length - 1 && '\n'}
@@ -555,14 +586,19 @@ function Detail(props){
                         }
                     </View>
 
-                    <Text style={styles.detailChatbotSituationHeader}>문장별 음성 우울 분석</Text>
+                    <Text style={styles.detailChatbotSituationHeader}>음성 감정, 우울감 분석</Text>
                     <View style={styles.detailChatbotSituation}>
                         {
-                            <Text>
-                                {audioDepress.depress}
-                            </Text>
+                            audioDepress ? (
+                                <Text>
+                                    감정 : {audioDepress.emotion}, {audioDepress.depress} 
+                                </Text>
+                            ) : (
+                                <Text>음성파일이 없어요.</Text>
+                            )
                         }
                     </View>
+
                 </View>
 
                 <Button

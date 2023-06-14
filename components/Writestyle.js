@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
         borderColor: 'green',
         borderRadius: 20,
         marginHorizontal: 10,
-        marginVertical: 10
+        marginVertical: 10,
     },
 
     detailHeader: {
@@ -87,6 +87,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontSize: 25,
         marginTop: 13,
+        flexDirection: 'row'
     },
 
     detailChatbot: {
@@ -138,6 +139,12 @@ const styles = StyleSheet.create({
         marginTop: -8,
         marginBottom: 15,
         marginHorizontal: 18
+    },
+
+    playaudio: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: -10
     }
 })
 

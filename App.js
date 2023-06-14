@@ -5,7 +5,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
 import { StatusBar } from 'expo-status-bar';
-import Home from './components/Home';
+import Statistics from './components/Statistics';
 import Setting from './components/Setting';
 import Tabs from './components/Tab';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -19,14 +19,15 @@ export default function App() {
       <StatusBar style="black" />
       
       <Tab.Navigator
+        initialRouteName="Write"
         screenOptions={({ route }) => ({
           tabBarIcon: ({ focused, color, size }) => {
             let iconName;
 
-            if (route.name === 'Home') {
+            if (route.name === 'Statistics') {
               iconName = focused
-                ? 'calendar'
-                : 'calendar-outline';
+                ? 'ios-stats-chart'
+                : 'ios-stats-chart-outline';
             } else if (route.name === 'Setting') {
               iconName = focused
                 ? 'settings'
@@ -36,7 +37,6 @@ export default function App() {
                 ? 'book'
                 : 'book-outline';
             }
-            // You can return any component that you like here!
             
             return <Icon name={iconName} size={size} color={color} />;
           },
@@ -44,7 +44,7 @@ export default function App() {
           tabBarInactiveTintColor: 'gray',
         })}
       >
-        <Tab.Screen name="Home" component={Home} />
+        <Tab.Screen name="Statistics" component={Statistics} />
         <Tab.Screen name="Write" component={Write} />
         <Tab.Screen name="Setting" component={Setting} />
       </Tab.Navigator>
