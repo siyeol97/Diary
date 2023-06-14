@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
 
     note: {
         flex: 1,
-        backgroundColor: 'rgba(245, 255, 250, 1)',
+        backgroundColor: '#D2E9E9',
         marginBottom: 15,
         paddingVertical: 15,
         paddingHorizontal: 20,
@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
         flexDirection: 'colonm',
         marginHorizontal: 15,
         borderWidth: 2,
-        borderColor: 'green'
+        borderColor: '#C4DFDF'
     },
 
     swipeHiddenItem: {
@@ -87,7 +87,11 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontSize: 25,
         marginTop: 13,
-        flexDirection: 'row'
+        marginLeft: 65
+    },
+    backbtn: {
+        marginTop: 8,
+        marginLeft: 10
     },
 
     detailChatbot: {

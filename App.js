@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -14,6 +14,9 @@ import Write from './components/Write';
 const Tab = createBottomTabNavigator();
 
 export default function App() {
+
+  const [note, setNote] = useState([]);
+
   return (
     <NavigationContainer>
       <StatusBar style="black" />
@@ -44,9 +47,10 @@ export default function App() {
           tabBarInactiveTintColor: 'gray',
         })}
       >
-        <Tab.Screen name="Statistics" component={Statistics} />
-        <Tab.Screen name="Write" component={Write} />
+        <Tab.Screen name="Statistics" children={()=><Statistics note={note} setNote={setNote} />} />
+        <Tab.Screen name="Write" children={()=><Write note={note} setNote={setNote} />} />
         <Tab.Screen name="Setting" component={Setting} />
+        
       </Tab.Navigator>
     </NavigationContainer>
   );

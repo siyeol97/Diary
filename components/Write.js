@@ -38,7 +38,7 @@ const TEXTDEPRESS_URL_LOCAL_ADDRESS = "https://7e50-35-221-32-166.ngrok-free.app
 const AUDIODEPRESS_URL_LOCAL_ADDRESS = 'http://ce9e-121-174-96-133.ngrok-free.app';
 
 
-export default function Write({ navigation }){
+export default function Write({ note, setNote }){
 
     //TextInput에 입력한 text
     const [text, setText] = useState("");
@@ -57,7 +57,7 @@ export default function Write({ navigation }){
         loadNote();
     }, [])
 
-    const [note, setNote] = useState([]);
+    //const [note, setNote] = useState([]);
 
     const saveNote = async (toSave) => {
         await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(toSave))
@@ -387,7 +387,7 @@ export default function Write({ navigation }){
     }
 
     return (
-        <SafeAreaView style={{ flex: 1 }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor:'#E3F4F4' }}>
             {
                 //일기 클릭하면 Detail 페이지
                 selectedNoteKey ? (
@@ -484,9 +484,9 @@ function Detail(props){
     console.log('============================================================')
     return (
         <SafeAreaView style={{ flex: 1 , backgroundColor: 'rgba(245, 255, 250, 0.5)' }}>
-            <View style={styles.detailHeader}>
-                <TouchableOpacity onPress={()=>{props.setSelectedNoteKey(null)}}>
-                    <Icon name='md-arrow-back' size={35} color='green' />
+            <View style={{ flexDirection: 'row'}}>
+                <TouchableOpacity style={styles.backbtn} onPress={()=>{props.setSelectedNoteKey(null)}}>
+                    <Icon name='md-arrow-back' size={40} color='green' />
                 </TouchableOpacity>
                 <Text style={styles.detailHeader}>일기 상세 페이지</Text>
             </View>
