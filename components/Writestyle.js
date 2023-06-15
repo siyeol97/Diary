@@ -7,7 +7,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontSize: 25,
         marginTop: 13,
-        marginBottom: -7
+        marginBottom: 10
     },
 
     writeDiary: {
@@ -132,10 +132,14 @@ const styles = StyleSheet.create({
     },
 
     recordBtn: {
-        backgroundColor: 'lightgrey',
-        marginTop: -8,
-        marginBottom: 15,
-        marginHorizontal: 18
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginLeft: 298,
+        marginTop: 0,
+        marginBottom: -53,
+        width: 35,
+        height: 35, 
+        zIndex: 1
     },
 
     stopRecordBtn: {

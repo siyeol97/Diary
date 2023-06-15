@@ -32,17 +32,17 @@ const STORAGE_KEY = "@note";
 const CHATBOT_URL_LOCAL_ADDRESS = 'http://172.20.10.7:5000';
 const GOOGLE_STT_API_ADDRESS = 'http://172.20.10.7:5000/audio';
 
-const EMOTION7_URL_LOCAL_ADDRESS = "https://1405-34-171-187-207.ngrok-free.app";
-const TEXTDEPRESS_URL_LOCAL_ADDRESS = "https://7e50-35-221-32-166.ngrok-free.app";
+//const EMOTION7_URL_LOCAL_ADDRESS = "https://d42f-35-221-174-156.ngrok-free.app";
+const TEXTDEPRESS_URL_LOCAL_ADDRESS = "https://c2d3-34-74-181-59.ngrok-free.app";
 
-const AUDIODEPRESS_URL_LOCAL_ADDRESS = 'http://ce9e-121-174-96-133.ngrok-free.app';
+const AUDIODEPRESS_URL_LOCAL_ADDRESS = 'http://9426-121-174-96-133.ngrok-free.app';
 
 
 export default function Write({ note, setNote }){
 
     //TextInput에 입력한 text
     const [text, setText] = useState("");
-    const onChangeText = (payload) => setText(payload);
+    const onChangeText = (payload) => setText(payload); 
 
     const [chatbotanswer, setChatbotanswer] = useState();
     const [textEmotion, setTextEmotion] = useState();
@@ -51,6 +51,7 @@ export default function Write({ note, setNote }){
     const [isFetching, setIsFetching] = useState(false);
     const [transedText, setTransedText] = useState("");
     const [audioDepress, setAudioDepress] = useState();
+    const [textDepressValue, setTextDepressValue] = useState();
 
     useEffect(()=>{
         console.log('Write 실행')
@@ -113,7 +114,6 @@ export default function Write({ note, setNote }){
         }
       }
     
-
     const stopRecording = async() => {
         console.log('stopRecording 함수 시작!!\n===========================')
         await recording.stopAndUnloadAsync();
@@ -128,7 +128,7 @@ export default function Write({ note, setNote }){
           duration: getDurationFormatted(status.durationMillis),
           status : status
         }
-        console.log('audio', audio);
+        console.log('audio 객체 생성 -> ', audio);
         const transcript = await getTranscription(audio);
         const audioDepress = await getAudioDepress(audio);
 
@@ -145,6 +145,7 @@ export default function Write({ note, setNote }){
 
     //Flask api 서버로 보냄, GOOGLE STT API 요청
     const getTranscription = async (audio) => {
+        console.log('구글 API 요청 보냄')
         const apiUrl = GOOGLE_STT_API_ADDRESS; // Flask API 서버의 업로드 엔드포인트 URL
 
         try {
@@ -194,13 +195,13 @@ export default function Write({ note, setNote }){
         // save to do
         const newNote = [...note]
         const newData = {[Date.now()]: {text, textEmotion, chatbotanswer, textDepress, audio:audioData, audioDepress}}
-        newNote.unshift(newData)
+        newNote.push(newData)
         setNote(newNote);
         await saveNote(newNote);
         setText("");
-        setChatbotanswer([]);
-        setTextEmotion([]);
-        setTextDepress([]);
+        setChatbotanswer();
+        setTextEmotion();
+        setTextDepress();
         setAudioData();
         setAudioDepress();
         console.log('addNote 함수 종료')
@@ -237,7 +238,7 @@ export default function Write({ note, setNote }){
 
     //KoBERT 7가지 감정 분석
     const do7Emotion = async(text) => {
-        console.log('do7Emotion 함수 실행');
+        console.log('do7Emotion 함수 실행 : ', text);
         try {
             const url = EMOTION7_URL_LOCAL_ADDRESS;
             const user_input = text;
@@ -257,9 +258,9 @@ export default function Write({ note, setNote }){
         }
     }
 
-    //TEXT 우울 분석
+    /////////TEXT 우울 분석/////////
     const doTextDepress = async(text) => {
-        console.log('doTextDepress 함수 실행');
+        console.log('doTextDepress 함수 실행 : ', text);
         try {
             const url = TEXTDEPRESS_URL_LOCAL_ADDRESS;
             const user_input = text;
@@ -270,7 +271,7 @@ export default function Write({ note, setNote }){
             console.log('================================================')
             console.log('depress : ', depress);
             console.log('================================================')
-
+            //depress = {'emotion_list' : emotion, 'depress_list' : depress[0], 'depress_value' : depress[1]}
             return depress;
 
         } catch (error) {
@@ -284,6 +285,7 @@ export default function Write({ note, setNote }){
         const apiUrl = AUDIODEPRESS_URL_LOCAL_ADDRESS; // Flask API 서버의 업로드 엔드포인트 URL
 
         try {
+            console.log('음성 우울 분석 API 서버 요청 실행')
             const formData = new FormData();
             formData.append('file', {
                 uri: audio.file, // 저장된 오디오 파일의 경로
@@ -320,15 +322,13 @@ export default function Write({ note, setNote }){
         console.log('text : ', text)
 
         const chatAnswer = await doKobert(text);
-        const emotions = await do7Emotion(text);
         const text_depress = await doTextDepress(text);
-        console.log('chatAnswer : ', chatAnswer)
-        console.log('emotions : ', emotions)
-        console.log('text_depress : ', text_depress)
+        console.log('챗봇 응답 : ', chatAnswer)
+        console.log('텍스트 모델 결과 : ', text_depress)
         setChatbotanswer(chatAnswer);
-        setTextEmotion(emotions.emotions);
+        setTextEmotion(text_depress.emotion_list);
         setTextDepress(text_depress.depress_list);
-        
+        setTextDepressValue(text_depress.depress_value)
         console.log('handlePress 함수 종료')
         console.log('================================================')
     };
@@ -387,7 +387,7 @@ export default function Write({ note, setNote }){
     }
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor:'#E3F4F4' }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor:'rgba(227, 244, 244, 0.4)' }}>
             {
                 //일기 클릭하면 Detail 페이지
                 selectedNoteKey ? (
@@ -396,38 +396,9 @@ export default function Write({ note, setNote }){
                 //평소에는 일기 목록 페이지 & 일기쓰기
                 : (
                     <Pressable style={{ flex: 1 }} onPress={()=> Keyboard.dismiss()}>
-                        <Text style={styles.header}>오늘의 일기 쓰기</Text>
-                        <View style={styles.writeDiary}>
-                                <TextInput 
-                                    onChangeText={onChangeText}
-                                    value={text}
-                                    multiline={true}
-                                    style={styles.input}
-                                    placeholder={"오늘 있었던 일을 써주세요."}
-                                />
-                                <TouchableOpacity onPress={ ()=> { handlePress(text); Keyboard.dismiss(); } }>
-                                    <Icon style={styles.send} name='arrow-down-circle' size={35} color='green' />
-                                </TouchableOpacity>
-                        </View>
-
-                        { //녹음버튼
-                            isRecording ? (
-                                <View style={styles.stopRecordBtn}>
-                                    <Button
-                                        title="녹음 종료"
-                                        onPress={() => { console.log('녹음 종료 버튼 눌림'); saveAudioNote(); }}
-                                    />
-                                </View>
-                            ) : (
-                                <View style={styles.recordBtn}>
-                                    <Button
-                                        title="음성일기 쓰기"
-                                        onPress={() => {console.log('녹음 시작 버튼 눌림'); startRecording(); }}
-                                    />
-                                </View>
-                            )
-                        }
                         
+                        <Text style={styles.header}>오늘의 일기 쓰기</Text>
+
                         <SwipeListView 
                             data={note}
                             renderItem={ data => (
@@ -453,6 +424,33 @@ export default function Write({ note, setNote }){
                             )}
                             rightOpenValue={-40}
                         />
+
+                        { //녹음버튼
+                            isRecording ? (
+                                <TouchableOpacity style={styles.recordBtn} onPress={() => { console.log('녹음 종료 버튼 눌림'); saveAudioNote(); } }>
+                                        <Icon name='mic-sharp' size={25} color='red' />
+                                </TouchableOpacity>
+                            ) : (
+                                <TouchableOpacity style={styles.recordBtn} onPress={() => {console.log('녹음 시작 버튼 눌림'); startRecording(); } }>
+                                    <Icon name='mic-sharp' size={25} color='green' />
+                                </TouchableOpacity>
+                            )
+                        }
+                        <View style={styles.writeDiary}>
+                                <TextInput 
+                                    onChangeText={onChangeText}
+                                    value={text}
+                                    multiline={true}
+                                    style={styles.input}
+                                    placeholder={"오늘 있었던 일을 써주세요."}
+                                />
+                                <TouchableOpacity onPress={ ()=> { handlePress(text); Keyboard.dismiss(); } }>
+                                    <Icon style={styles.send} name='arrow-up-circle' size={35} color='green' />
+                                </TouchableOpacity>
+                        </View>
+
+                        
+
                     </Pressable>
                 )
             }
@@ -478,10 +476,10 @@ function Detail(props){
         return counts;
     }, {});
     
-    console.log('============================================================')
+    console.log('======================!!!!! 데이터 확인 !!!!!==============================')
     console.log('KEY : ', props.selectedNoteKey)
     console.log('데이터 : ', selectedNote[props.selectedNoteKey])
-    console.log('============================================================')
+    console.log('===========================================================================')
     return (
         <SafeAreaView style={{ flex: 1 , backgroundColor: 'rgba(245, 255, 250, 0.5)' }}>
             <View style={{ flexDirection: 'row'}}>
@@ -524,7 +522,7 @@ function Detail(props){
                                     if (
                                     (!uniqueAnswers.some((a) => a.answer === currentAnswer.answer) ||
                                         (isAmbiguous && currentAnswer.situation !== '모호함')) &&
-                                    currentAnswer.softmax_value > 0.10 // softmax_value가 0.15 이상인 경우에만 추가
+                                    currentAnswer.softmax_value > 0.07 // softmax_value가 0.15 이상인 경우에만 추가
                                     ) {
                                     uniqueAnswers.push(currentAnswer.answer);
                                     }
@@ -550,7 +548,7 @@ function Detail(props){
                                     if (
                                     (!uniqueSituations.includes(currentAnswer.situation) ||
                                         (isAmbiguous && currentAnswer.situation !== '모호함')) &&
-                                    currentAnswer.softmax_value > 0.10 // softmax_value가 0.15 이상인 경우에만 추가
+                                    currentAnswer.softmax_value > 0.07 // softmax_value가 0.15 이상인 경우에만 추가
                                     ) {
                                     uniqueSituations.push(currentAnswer.situation);
                                     }
