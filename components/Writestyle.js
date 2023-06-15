@@ -20,24 +20,33 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         paddingVertical: 5,
         paddingHorizontal: 30,
-        marginVertical: 20,
+        marginVertical: 10,
         marginRight: 5,
         marginLeft: 17,
         fontSize: 16,
         marginHorizontal: 15,
         borderWidth: 1,
-        borderColor: 'green',
+        borderColor: '#576F72',
         borderRadius: 25,
+    },
+
+    inputContainer: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        flexDirection: 'row',
     },
 
     send: {
         marginHorizontal: 3,
-        marginRight: 10
+        marginRight: 10,
+        marginTop: 6
     },
 
     note: {
         flex: 1,
-        backgroundColor: '#D2E9E9',
+        backgroundColor: '#e4f0ea',
         marginBottom: 15,
         paddingVertical: 15,
         paddingHorizontal: 20,
@@ -45,7 +54,7 @@ const styles = StyleSheet.create({
         flexDirection: 'colonm',
         marginHorizontal: 15,
         borderWidth: 2,
-        borderColor: '#C4DFDF'
+        borderColor: '#416753'
     },
 
     swipeHiddenItem: {
@@ -75,7 +84,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingVertical: 15,
         borderWidth: 1,
-        borderColor: 'green',
+        borderColor: '#576F72',
         borderRadius: 20,
         marginHorizontal: 10,
         marginVertical: 10,
@@ -98,22 +107,22 @@ const styles = StyleSheet.create({
     },
 
     detailChatbotAnswer: {
-        backgroundColor: 'beige',
+        backgroundColor: '#F0F5F9',
         paddingHorizontal: 20,
         paddingVertical: 15,
         borderWidth: 1,
-        borderColor: 'burlywood',
+        borderColor: '#BEAEE2',
         borderRadius: 20,
         marginHorizontal: 10,
         marginVertical: 10
     },
 
     detailChatbotSituation: {
-        backgroundColor: 'beige',
+        backgroundColor: '#F0F5F9',
         paddingHorizontal: 20,
         paddingVertical: 15,
         borderWidth: 1,
-        borderColor: 'burlywood',
+        borderColor: '#BEAEE2',
         borderRadius: 20,
         marginHorizontal: 10,
         marginVertical: 10
@@ -132,13 +141,7 @@ const styles = StyleSheet.create({
     },
 
     recordBtn: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginLeft: 298,
-        marginTop: 0,
-        marginBottom: -53,
-        width: 35,
-        height: 35, 
+        marginTop: 8,
         zIndex: 1
     },
 

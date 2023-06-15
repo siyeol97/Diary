@@ -4,50 +4,50 @@ const initialEmotionData = [
     {
         name: "두려움",
         Count: 0,
-        color: "#BEAEE2",
-        legendFontColor: "#7F7F7F",
+        color: "#746272",
+        legendFontColor: "#595959",
         legendFontSize: 15
     },
     {
         name: "놀람",
         Count: 0,
-        color: "#F5EBE0",
-        legendFontColor: "#7F7F7F",
+        color: "#B78A89",
+        legendFontColor: "#595959",
         legendFontSize: 0
     },
     {
-        name: "화가남",
+        name: "화남",
         Count: 0,
-        color: "#F0DBDB",
-        legendFontColor: "#7F7F7F",
+        color: "#B3685C",
+        legendFontColor: "#595959",
         legendFontSize: 15
     },
     {
         name: "슬픔",
         Count: 0,
-        color: "#DBA39A",
-        legendFontColor: "#7F7F7F",
+        color: "#4F6C8C",
+        legendFontColor: "#595959",
         legendFontSize: 15
     },
     {
         name: "중립",
         Count: 0,
-        color: "#CDF0EA",
-        legendFontColor: "#7F7F7F",
+        color: "#D4B85F",
+        legendFontColor: "#595959",
         legendFontSize: 15
     },
     {
         name: "행복함",
         Count: 0,
-        color: "#CCD5AE",
-        legendFontColor: "#7F7F7F",
+        color: "#82AF99",
+        legendFontColor: "#595959",
         legendFontSize: 15
     },
     {
         name: "모멸감",
         Count: 0,
-        color: "#F7DBF0",
-        legendFontColor: "#7F7F7F",
+        color: "#90A243",
+        legendFontColor: "#595959",
         legendFontSize: 15
     }
 ]

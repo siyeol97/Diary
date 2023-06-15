@@ -6,7 +6,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
 import { StatusBar } from 'expo-status-bar';
 import Statistics from './components/Statistics';
-import Setting from './components/Setting';
+import Selfcare from './components/Selfcare';
 import Tabs from './components/Tab';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Write from './components/Write';
@@ -31,10 +31,10 @@ export default function App() {
               iconName = focused
                 ? 'ios-stats-chart'
                 : 'ios-stats-chart-outline';
-            } else if (route.name === 'Setting') {
+            } else if (route.name === 'Selfcare') {
               iconName = focused
-                ? 'settings'
-                : 'settings-outline';
+                ? 'heart'
+                : 'heart-outline';
             } else if (route.name === 'Write') {
               iconName = focused
                 ? 'book'
@@ -43,13 +43,13 @@ export default function App() {
             
             return <Icon name={iconName} size={size} color={color} />;
           },
-          tabBarActiveTintColor: 'green',
+          tabBarActiveTintColor: '#4C6050',
           tabBarInactiveTintColor: 'gray',
         })}
       >
         <Tab.Screen name="Statistics" children={()=><Statistics note={note} setNote={setNote} />} />
         <Tab.Screen name="Write" children={()=><Write note={note} setNote={setNote} />} />
-        <Tab.Screen name="Setting" component={Setting} />
+        <Tab.Screen name="Selfcare" component={Selfcare} />
         
       </Tab.Navigator>
     </NavigationContainer>
