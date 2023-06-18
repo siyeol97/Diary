@@ -12,7 +12,7 @@ const styles = StyleSheet.create({
 
     writeDiary: {
         flexDirection: 'row',
-        alignItems: 'center'
+        alignItems: 'center',
     },
 
     input: {
@@ -47,27 +47,31 @@ const styles = StyleSheet.create({
     note: {
         flex: 1,
         backgroundColor: '#e4f0ea',
-        marginBottom: 15,
+        marginBottom: 0,
         paddingVertical: 15,
         paddingHorizontal: 20,
-        borderRadius: 15,
+        borderRadius: 0,
         flexDirection: 'colonm',
-        marginHorizontal: 15,
-        borderWidth: 2,
-        borderColor: '#416753'
+        marginHorizontal: 0,
+        borderBottomWidth: 1,
+        borderBottomColor: '#416753',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 0.3 },
+        shadowOpacity: 0.5,
+        shadowRadius: 2,
     },
 
     swipeHiddenItem: {
-        flex: 1,
-        height: '100%',
-        flexDirection: 'row',
-        justifyContent: 'flex-end',
-        alignItems: 'center',
-        marginBottom: 15
+        flex: 0.5,
+        justifyContent: 'center',
+        alignItems: 'flex-end',
+        backgroundColor: 'red',
+        borderBottomWidth: 1,
+        borderBottomColor: 'white'
     },
 
     swipeIcon: {
-        marginRight: 8
+        marginRight: 17
     },
 
     date: {
@@ -80,12 +84,12 @@ const styles = StyleSheet.create({
     },
 
     detailNote: {
-        backgroundColor: 'mintcream',
+        backgroundColor: '#F8F6F4',
         paddingHorizontal: 20,
         paddingVertical: 15,
         borderWidth: 1,
-        borderColor: '#576F72',
-        borderRadius: 20,
+        borderColor: '#213028',
+        borderRadius: 10,
         marginHorizontal: 10,
         marginVertical: 10,
     },
@@ -107,23 +111,23 @@ const styles = StyleSheet.create({
     },
 
     detailChatbotAnswer: {
-        backgroundColor: '#F0F5F9',
+        backgroundColor: '#F8F6F4',
         paddingHorizontal: 20,
         paddingVertical: 15,
         borderWidth: 1,
-        borderColor: '#BEAEE2',
-        borderRadius: 20,
+        borderColor: '#213028',
+        borderRadius: 10,
         marginHorizontal: 10,
         marginVertical: 10
     },
 
     detailChatbotSituation: {
-        backgroundColor: '#F0F5F9',
+        backgroundColor: '#F8F6F4',
         paddingHorizontal: 20,
         paddingVertical: 15,
         borderWidth: 1,
-        borderColor: '#BEAEE2',
-        borderRadius: 20,
+        borderColor: '#213028',
+        borderRadius: 10,
         marginHorizontal: 10,
         marginVertical: 10
     },

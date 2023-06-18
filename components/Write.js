@@ -12,7 +12,8 @@ import { StyleSheet,
             Alert,
             TouchableHighlight,
             SafeAreaView,
-            KeyboardEvent } from 'react-native';
+            KeyboardEvent,
+            Dimensions } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -22,6 +23,7 @@ import axios from 'axios';
 import styles from './Writestyle';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
+import { StackedBarChart } from 'react-native-chart-kit';
 
 //GOOGLE STT API 설정
 const ENCODING = 'LINEAR16';
@@ -35,12 +37,12 @@ const CHATBOT_URL_LOCAL_ADDRESS = 'http://172.20.10.7:5000';
 
 const GOOGLE_STT_API_ADDRESS = 'http://172.20.10.7:5000/audio';
 
-const TEXTDEPRESS_URL_LOCAL_ADDRESS = "https://2990-34-91-82-114.ngrok-free.app";
+const TEXTDEPRESS_URL_LOCAL_ADDRESS = "https://8657-34-82-54-112.ngrok-free.app";
 
-const AUDIODEPRESS_URL_LOCAL_ADDRESS = 'http://69c7-121-174-96-133.ngrok-free.app';
+const AUDIODEPRESS_URL_LOCAL_ADDRESS = 'http://5305-121-174-96-133.ngrok-free.app';
 
 
-export default function Write({ note, setNote }){
+export default function Write({ note, setNote, totalDepressValue, setTotalDepressValue }){
 
     //TextInput에 입력한 text
     const [text, setText] = useState("");
@@ -180,7 +182,7 @@ export default function Write({ note, setNote }){
             formData.append('file', {
                 uri: audio.file, // 저장된 오디오 파일의 경로
                 type: 'audio/x-wav', // 오디오 파일의 MIME 타입에 맞게 설정 (wav 파일의 경우)
-                name: 'recording.wav' // 오디오 파일의 이름 (원하는 이름으로 설정)
+                name: 'recording.wav' // 오디오 파일의 이름 
             })
 
             const response = await axios.post(apiUrl, formData);
@@ -373,7 +375,7 @@ export default function Write({ note, setNote }){
     const formatDate = (timestamp) => {
         const date = new Date(Number(timestamp));
         // 원하는 날짜 포맷 적용
-        const formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+        const formattedDate = `${date.getFullYear()}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
         return formattedDate;
     };
 
@@ -422,13 +424,25 @@ export default function Write({ note, setNote }){
             {
                 //일기 클릭하면 Detail 페이지
                 selectedNoteKey ? (
-                    <Detail selectedNoteKey={selectedNoteKey} setSelectedNoteKey={setSelectedNoteKey} note={note} playAudio={playAudio} pauseAudio={pauseAudio} isAudioPlay={isAudioPlay} setIsAudioPlay={setIsAudioPlay} />
+                    <Detail 
+                        selectedNoteKey={selectedNoteKey}
+                        setSelectedNoteKey={setSelectedNoteKey}
+                        note={note} 
+                        playAudio={playAudio}
+                        pauseAudio={pauseAudio}
+                        isAudioPlay={isAudioPlay}
+                        setIsAudioPlay={setIsAudioPlay}
+                        totalDepressValue={totalDepressValue}
+                        setTotalDepressValue={setTotalDepressValue}
+                    />
                 )
                 //평소에는 일기 목록 페이지 & 일기쓰기
                 : (
                     <Pressable style={{ flex: 1 }} onPress={()=> Keyboard.dismiss()}>
-                        
-                        <Text style={styles.header}>오늘의 일기 작성</Text>
+
+                        <View style={{ borderBottomColor: '#416753', borderBottomWidth: 1,  }}>
+                            <Text style={styles.header}>오늘의 일기 작성</Text>
+                        </View>
 
                         <SwipeListView
                             data={note}
@@ -446,14 +460,17 @@ export default function Write({ note, setNote }){
                                     </View>
                             )}
                             renderHiddenItem={(data, rowMap) => (
-                                <View style={styles.swipeHiddenItem}>
-                                    <TouchableOpacity onPress={()=>deleteNote(rowMap, Object.keys(data.item)[0])}>
-                                        <Icon style={styles.swipeIcon} name='ios-close' size={40} color='red' />
-                                    </TouchableOpacity>
+                                <View style={{ flexDirection: 'row', flex: 1 }}>
+                                    <View style={{ flex: 0.5, backgroundColor: 'white' }}></View>
+                                    <View style={styles.swipeHiddenItem}>
+                                        <TouchableOpacity onPress={()=>deleteNote(rowMap, Object.keys(data.item)[0])}>
+                                            <Icon style={styles.swipeIcon} name='trash-outline' size={30} color='white' />
+                                        </TouchableOpacity>
+                                    </View>
                                 </View>
                             )}
-                            rightOpenValue={-40}
-                            style={{marginBottom: 41}}
+                            rightOpenValue={-70}
+                            style={{marginBottom: 50}}
                         />
 
                         
@@ -494,14 +511,28 @@ export default function Write({ note, setNote }){
 
 // Detail 페이지
 function Detail(props){
+    const chartConfig = {
+        backgroundGradientFrom: "#f9f9f9",
+        backgroundGradientTo: "#f9f9f9",
+        color: (opacity = 1) => `rgba(41, 44, 61, ${opacity})`,
+        strokeWidth: 3,    
+        barPercentage: 0.5,
+        useShadowColorFromDataset: false,
+        style: {
+          borderRadius: 16,
+        },
+    };
+    const screenWidth = Dimensions.get('window').width
     const date = new Date(Number(props.selectedNoteKey));
-    const formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+    const formattedDate = `${date.getFullYear()}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
     const selectedNote = props.note.find(item => Object.keys(item)[0] === props.selectedNoteKey);
     const chatbotanswerArray = selectedNote[props.selectedNoteKey].chatbotanswer
     const textemotionArray = selectedNote[props.selectedNoteKey].textEmotion
     const textDepressArray = selectedNote[props.selectedNoteKey].textDepress
-    //const textDepressValue = selectedNote[props.selectedNoteKey].textDepressValue
-
+    const textDepressValue = selectedNote[props.selectedNoteKey].textDepressValue
+    const audioDepressValue = selectedNote[props.selectedNoteKey].audioDepress.sigmoid_value[0][0]
+    const totalDepressValuetemp = ((textDepressValue*0.8)+(audioDepressValue*0.2)) * 100
+    
     let audioDepressData = selectedNote[props.selectedNoteKey].audioDepress
     
     const textemotionCounts = textemotionArray.reduce((counts, emotion) => {
@@ -512,16 +543,37 @@ function Detail(props){
         counts[textdepress] = (counts[textdepress] || 0) + 1;
         return counts;
     }, {});
+
+
+    //Detail page 텍스트 우울 그래프
+    const colors = {'감정조절이상': '#222831', '불면': '#746272', '분노': '#B3685C', '불안': '#D4B85F', '초조': '#90A243', '슬픔': '#82AF99', '외로움': '#89A0A9', '우울': '#4F6C8C', '의욕상실': '#869b92', '무기력': '#F38181', '자살': '#424874', '자존감저하': '#B7C4CF', '절망': '#E84545', '죄책감': '#E23E57', '집중력저하': '#FFCFDF', '피로': '#F07B3F', '식욕저하': '#753422', '식욕증가': '#F9ECEC', '일상': '#FFB6B6'};
+    const [textDepressChartdata, setTextDepressChartdata] = useState([]);
+    const getTextDepressChartdata = ()=> {
+        const tempData = [];
+        const totalCount = Object.values(textDepressCount).reduce((a, b) => a + b, 0);
+        Object.entries(textDepressCount).map(([textdepress, count], index, arr) => {
+            const percent = (count / totalCount) * 100;
+            tempData.push({ name: textdepress, color: colors[textdepress], percent: percent});
+      })
+      setTextDepressChartdata(tempData);
+    };
+    useEffect(()=>{
+        getTextDepressChartdata();
+        props.setTotalDepressValue(totalDepressValuetemp);
+    }, [])
     
     console.log('======================!!!!! 데이터 확인 !!!!!==============================')
     console.log('KEY : ', props.selectedNoteKey)
     console.log('데이터 : ', selectedNote[props.selectedNoteKey])
+    console.log('textDepressValue : ', textDepressValue)
+    console.log('textDepressChartdata : ', textDepressChartdata)
+    console.log('totalDepressValuetemp : ', totalDepressValuetemp)
     console.log('===========================================================================')
     return (
-        <SafeAreaView style={{ flex: 1 , backgroundColor: 'rgba(245, 255, 250, 0.5)' }}>
+        <SafeAreaView style={{ flex: 1 , backgroundColor: 'white' }}>
             <View style={{ flexDirection: 'row'}}>
                 <TouchableOpacity style={styles.backbtn} onPress={()=>{props.setSelectedNoteKey(null)}}>
-                    <Icon name='md-arrow-back' size={40} color='#576F72' />
+                    <Icon name='chevron-back-outline' size={40} color='#576F72' />
                 </TouchableOpacity>
                 <Text style={styles.detailHeader}>일기 상세 페이지</Text>
             </View>
@@ -554,7 +606,7 @@ function Detail(props){
             <ScrollView>
                 <View style={styles.detailChatbot}>
 
-                    <Text style={styles.detailChatbotAnswerHeader}>위로형 챗봇 응답 - 부정적인 내용일 때</Text>
+                    <Text style={styles.detailChatbotAnswerHeader}>위로형 챗봇 응답</Text>
                     <View style={styles.detailChatbotAnswer}>
                         <Text>
                             {
@@ -579,71 +631,76 @@ function Detail(props){
                             }
                         </Text>
                     </View>
-                    
-                    <Text style={styles.detailChatbotSituationHeader}>예측되는 상황</Text>
-                    <View style={styles.detailChatbotSituation}>
-                        <Text>
-                            {
-                                chatbotanswerArray
-                                .sort((a, b) => b.softmax_value - a.softmax_value) // softmax_value를 내림차순으로 정렬
-                                .reduce((uniqueSituations, currentAnswer) => {
-                                    const isAmbiguous = uniqueSituations.some((a) => a === '모호함');
-                                    if (isAmbiguous && currentAnswer.situation === '모호함') {
-                                    return uniqueSituations;
-                                    }
-                                    if (
-                                    (!uniqueSituations.includes(currentAnswer.situation) ||
-                                        (isAmbiguous && currentAnswer.situation !== '모호함')) &&
-                                    currentAnswer.softmax_value > 0.07 // softmax_value가 0.15 이상인 경우에만 추가
-                                    ) {
-                                    uniqueSituations.push(currentAnswer.situation);
-                                    }
-                                    return uniqueSituations;
-                                }, [])
-                                .slice(0, Math.min(chatbotanswerArray.length, 3)) // 배열 길이가 2 이상이면 최대 2개의 요소만 선택
-                                .join(', ') || "긍정적인 내용인것 같아요"
-                            }
-                        </Text>
-                    </View>
 
                     <Text style={styles.detailChatbotSituationHeader}>오늘의 대표 감정</Text>
                     <View style={styles.detailChatbotSituation}>
                         {
-                            Object.entries(textemotionCounts).map(([emotion, count], index, arr) => (
+                            Object.entries(textemotionCounts).map(([emotion, count], index, arr) => {
+                            // 가장 많이 등장한 감정만 표시
+                            if (count === Math.max(...Object.values(textemotionCounts))) {
+                                return (
                                 <Text key={index}>
                                     {emotion}
                                 </Text>
-                            ))
+                                );
+                            }
+                            return null; // 다른 감정은 표시하지 않음
+                            })
                         }
                     </View>
 
-                    <Text style={styles.detailChatbotSituationHeader}>문장별 텍스트 우울 분석</Text>
+                    <Text style={styles.detailChatbotSituationHeader}>텍스트,음성 우울감 분석</Text>
                     <View style={styles.detailChatbotSituation}>
+                        <Text>우울감 정도: {totalDepressValuetemp.toFixed(2)}%</Text>
                         {
-                            Object.entries(textDepressCount).map(([textdepress, count], index, arr) => (
-                                <Text key={index}>
-                                    {textdepress}: {count}문장
-                                    {index !== arr.length - 1 && '\n'}
-                                </Text>
-                            ))
-                        }
-                    </View>
+                            (textDepressValue >= 0.4) ? (
+                                <>
+                                <Text>우울 양상을 보이는 문장의 비율이 높습니다!</Text>
+                                    <View style={chartstyles.container}>
+                                        {
+                                            textDepressChartdata.map((item, index) => (
+                                                <View
+                                                    key={index}
+                                                    style={{
+                                                        ...chartstyles.barSegment,
+                                                        backgroundColor: item.color,
+                                                        flex: item.percent,
+                                                        marginTop: 5
+                                                }}>
+                                                <Text style={chartstyles.text}>{item.name}</Text>
+                                                </View>
+                                            ))
+                                        }
+                                    </View>
+                                </>
 
-                    <Text style={styles.detailChatbotSituationHeader}>음성 감정, 우울감 분석</Text>
-                    <View style={styles.detailChatbotSituation}>
-                        {
-                            audioDepressData ? (
-                                <Text>
-                                    감정 : {audioDepressData.emotion}, {audioDepressData.depress} 
-                                </Text>
                             ) : (
-                                <Text>음성파일이 없어요.</Text>
+                                null
                             )
                         }
                     </View>
+
+                    
 
                 </View>
             </ScrollView>
         </SafeAreaView>
     );
 }
+
+const chartstyles = StyleSheet.create({
+    container: {
+        flexDirection: 'row',
+        height: 30, 
+    },
+    barSegment: {
+        height: '100%',
+        justifyContent: 'center',
+    },
+    text: {
+        color: '#FFFFFF',
+        fontSize: 12,
+        textAlign: 'center',
+    },
+  });
+  

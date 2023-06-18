@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import {
   Dimensions, SafeAreaView,
   ScrollView,
-  StatusBar, StyleSheet, useColorScheme, Animated,
+  StatusBar, StyleSheet, useColorScheme,
   LayoutAnimation,
   View,
   Easing,
@@ -12,7 +12,7 @@ import { LineChart, ProgressChart, PieChart } from 'react-native-chart-kit';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { useEmotionData } from './emotionData';
 
-export default function Statistics({ note, setNote }){
+export default function Statistics({ note, setNote, totalDepressValue, setTotalDepressValue }){
     const screenWidth = Dimensions.get('window').width
     const chartConfig = {
         backgroundGradientFrom: "#f9f9f9",
@@ -140,7 +140,7 @@ export default function Statistics({ note, setNote }){
                 }}
                 style={{ flex: 1 }}>
                 <View style={styles.piechart}>
-                    <Text style={styles.chartheader}>텍스트 감정 분석 통계</Text>
+                    <Text style={styles.chartheader}>감정 분석 통계</Text>
                     <PieChart
                         data={emotionData}
                         width={screenWidth}

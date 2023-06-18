@@ -16,6 +16,7 @@ const Tab = createBottomTabNavigator();
 export default function App() {
 
   const [note, setNote] = useState([]);
+  const [totalDepressValue, setTotalDepressValue] = useState();
 
   return (
     <NavigationContainer>
@@ -47,8 +48,8 @@ export default function App() {
           tabBarInactiveTintColor: 'gray',
         })}
       >
-        <Tab.Screen name="Statistics" children={()=><Statistics note={note} setNote={setNote} />} />
-        <Tab.Screen name="Write" children={()=><Write note={note} setNote={setNote} />} />
+        <Tab.Screen name="Statistics" children={()=><Statistics note={note} setNote={setNote} totalDepressValue={totalDepressValue} setTotalDepressValue={setTotalDepressValue} />} />
+        <Tab.Screen name="Write" children={()=><Write note={note} setNote={setNote} totalDepressValue={totalDepressValue} setTotalDepressValue={setTotalDepressValue} />} />
         <Tab.Screen name="Selfcare" component={Selfcare} />
         
       </Tab.Navigator>
