@@ -50,7 +50,7 @@ export default function App() {
       >
         <Tab.Screen name="Statistics" children={()=><Statistics note={note} setNote={setNote} totalDepressValue={totalDepressValue} setTotalDepressValue={setTotalDepressValue} />} />
         <Tab.Screen name="Write" children={()=><Write note={note} setNote={setNote} totalDepressValue={totalDepressValue} setTotalDepressValue={setTotalDepressValue} />} />
-        <Tab.Screen name="Selfcare" component={Selfcare} />
+        <Tab.Screen name="Selfcare" children={()=><Selfcare note={note} />} />
         
       </Tab.Navigator>
     </NavigationContainer>

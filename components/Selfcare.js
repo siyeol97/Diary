@@ -4,8 +4,9 @@ import { StyleSheet, Text, View, Button, TouchableOpacity, ScrollView } from 're
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Icon from 'react-native-vector-icons/Ionicons';
+import Getplaylist from './Getplaylist';
 
-export default function Selfcare({ navigation }){
+export default function Selfcare({ note }){
 
     const [isPhq, setIsPhq] = useState(false);
     const [isMusic, setIsMusic] = useState(false);
@@ -36,7 +37,7 @@ export default function Selfcare({ navigation }){
     }
 
     if (isMusic) {
-        return <Music goBack={goBack} />
+        return <Music goBack={goBack} note={note} />
     }
 
     return (
@@ -46,14 +47,14 @@ export default function Selfcare({ navigation }){
                 onPress={()=>goPhq()}
                 activeOpacity={0.7}
                 style={[ styles.menu, {marginTop: 30} ]}>
-                <Text style={styles.menuText}>PHQ-9 검사하러 가기 !</Text>
+                <Text style={[styles.menuText, {color: 'white'}]}>PHQ-9 검사하러 가기 !</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
                 onPress={()=>goMusic()}
                 activeOpacity={0.7}
                 style={styles.menu}>
-                <Text style={styles.menuText}>음악 추천 받기 !</Text>
+                <Text style={[styles.menuText, {color: 'white'}]}>음악 추천 받기 !</Text>
             </TouchableOpacity>
         </View>
     )
@@ -74,6 +75,8 @@ function Phq({ goBack }){
     )
 }
 
+
+//PHQ-9 검사 페이지
 function Question(){
     const data = [
         '기분이 가라앉거나, 우울하거나, 희망이 없다고 \n느꼈다.',
@@ -133,20 +136,25 @@ function Question(){
     )
 }
 
-function Music({ goBack }){
+//음악 추천 페이지
+function Music({ goBack, note }){
     return(
         <View>
-            <TouchableOpacity style={styles.backbtn} onPress={()=>{goBack()}}>
-                    <Icon name='chevron-back-outline' size={40} color='#576F72' />
-            </TouchableOpacity>
-            <Text>음악 추천 페이지</Text>
+            <View>
+                <TouchableOpacity style={styles.backbtn} onPress={()=>{goBack()}}>
+                        <Icon name='chevron-back-outline' size={40} color='#576F72' />
+                </TouchableOpacity>
+                <Text style={styles.playlistheader}>오늘의 대표감정에 따라 음악을 추천해 드려요!</Text>
+            </View>
+            
+            <Getplaylist note={note} />
         </View>
     )
 }
 
 const styles = StyleSheet.create({
     menu: {
-        backgroundColor: 'lightgrey',
+        backgroundColor: '#576F72',
         paddingVertical: 15,
         paddingHorizontal: 20,
         borderRadius: 5,
@@ -159,6 +167,7 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.5,
         shadowRadius: 2,
+        color: 'white'
     },
 
     Phqscroll: {
@@ -208,5 +217,12 @@ const styles = StyleSheet.create({
     score: {
         fontSize: 20,
         
+    },
+
+    playlistheader: {
+        textAlign: 'center',
+        fontSize: 20,
+        marginTop: 30,
+        marginBottom: 10
     }
 })

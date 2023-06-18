@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
     },
 
     swipeIcon: {
-        marginRight: 17
+        marginRight: 18
     },
 
     date: {

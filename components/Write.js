@@ -24,6 +24,7 @@ import styles from './Writestyle';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
 import { StackedBarChart } from 'react-native-chart-kit';
+import { Image } from 'expo-image';
 
 //GOOGLE STT API 설정
 const ENCODING = 'LINEAR16';
@@ -37,7 +38,7 @@ const CHATBOT_URL_LOCAL_ADDRESS = 'http://172.20.10.7:5000';
 
 const GOOGLE_STT_API_ADDRESS = 'http://172.20.10.7:5000/audio';
 
-const TEXTDEPRESS_URL_LOCAL_ADDRESS = "https://8657-34-82-54-112.ngrok-free.app";
+const TEXTDEPRESS_URL_LOCAL_ADDRESS = "https://2331-34-91-10-137.ngrok-free.app";
 
 const AUDIODEPRESS_URL_LOCAL_ADDRESS = 'http://5305-121-174-96-133.ngrok-free.app';
 
@@ -52,7 +53,7 @@ export default function Write({ note, setNote, totalDepressValue, setTotalDepres
     const [textEmotion, setTextEmotion] = useState();
     const [textDepress, setTextDepress] = useState();
     const [audioData, setAudioData] = useState();
-    const [isAudioPlay, setIsAudioPlay] = useState(false);
+    
     const [transedText, setTransedText] = useState("");
     const [audioDepress, setAudioDepress] = useState();
     const [textDepressValue, setTextDepressValue] = useState();
@@ -116,9 +117,14 @@ export default function Write({ note, setNote, totalDepressValue, setTotalDepres
         return `${minutesDisplay}:${secondsDisplay}`;
     }
 
-    //========================== GOOGLE STT ==========================
+    //========================== GOOGLE STT ========================== 
     const [recording, setRecording] = useState();
     const [isRecording, setIsRecording] = useState(false);
+    const [isGetGoogleSTT, setIsGetGoogleSTT] = useState(false);
+    const [isGetAudioResult, setIsGetAudioResult] = useState(false);
+    const [isGetTextResult, setIsGetTextResult] = useState(false);
+    const [isGetChatResult, setIsGetChatResult] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const startRecording = async () => {
         setIsRecording(true);
@@ -142,6 +148,7 @@ export default function Write({ note, setNote, totalDepressValue, setTotalDepres
           console.error('Failed to start recording', err);
         }
       }
+    
     
     const stopRecording = async() => {
         console.log('stopRecording 함수 시작!!\n===========================')
@@ -174,7 +181,8 @@ export default function Write({ note, setNote, totalDepressValue, setTotalDepres
 
     //Flask api 서버로 보냄, GOOGLE STT API 요청
     const getTranscription = async (audio) => {
-        console.log('구글 API 요청 보냄')
+        console.log('구글 API 요청 보냄');
+        setIsGetGoogleSTT(true);
         const apiUrl = GOOGLE_STT_API_ADDRESS; // Flask API 서버의 업로드 엔드포인트 URL
 
         try {
@@ -186,9 +194,11 @@ export default function Write({ note, setNote, totalDepressValue, setTotalDepres
             })
 
             const response = await axios.post(apiUrl, formData);
+            setIsGetGoogleSTT(false);
             return response.data.transcript;
         } catch (error) {
             console.error('구글 STT API 요청 오류:', error);
+            setIsGetGoogleSTT(false);
             throw error;
         }
     };
@@ -224,7 +234,7 @@ export default function Write({ note, setNote, totalDepressValue, setTotalDepres
         // save to do
         const newNote = [...note]
         const newData = {[Date.now()]: {text, textEmotion, chatbotanswer, textDepress, textDepressValue, audio:audioData, audioDepress, textResult}}
-        newNote.push(newData)
+        newNote.unshift(newData)
         setNote(newNote);
         await saveNote(newNote);
         setText("");
@@ -240,6 +250,7 @@ export default function Write({ note, setNote, totalDepressValue, setTotalDepres
 
     // KoBERT 챗봇 응답
     const doKobert = async (text) => {
+        setIsGetChatResult(true);
         console.log('kobert API 서버 실행 :', text)
         try {
             const url = CHATBOT_URL_LOCAL_ADDRESS;
@@ -258,17 +269,20 @@ export default function Write({ note, setNote, totalDepressValue, setTotalDepres
             console.log('================================================')
             console.log('chatAnswer : ', chatAnswer);
             console.log('================================================')
+            setIsGetChatResult(false);
 
             return chatAnswer;
 
         } catch (error) {
             console.error('KoBERT 챗봇 서버 오류 :', error);
+            setIsGetChatResult(false);
             return [];
         }
     };
 
     /////////TEXT 우울 분석/////////
     const doTextDepress = async(text) => {
+        setIsGetTextResult(true);
         console.log('doTextDepress 함수 실행 : ', text);
         try {
             const url = TEXTDEPRESS_URL_LOCAL_ADDRESS;
@@ -281,16 +295,19 @@ export default function Write({ note, setNote, totalDepressValue, setTotalDepres
             console.log('depress : ', depress);
             console.log('================================================')
             //depress = {'emotion_list' : emotion, 'depress_list' : depress[0], 'depress_value' : depress[1]}
+            setIsGetTextResult(false);
             return depress;
 
         } catch (error) {
             console.error('텍스트 우울 분석 오류 :', error);
+            setIsGetTextResult(false);
             return [];
         }
     }
 
     //Flask api 서버로 보냄, 음성 우울 분석
     const getAudioDepress = async (audio) => {
+        setIsGetAudioResult(true);
         const apiUrl = AUDIODEPRESS_URL_LOCAL_ADDRESS; // Flask API 서버의 업로드 엔드포인트 URL
 
         try {
@@ -304,15 +321,17 @@ export default function Write({ note, setNote, totalDepressValue, setTotalDepres
 
             const response = await axios.post(apiUrl, formData);
             console.log('오디오 우울 분석 결과 : ', response)
+            setIsGetAudioResult(false);
             return response.data;
         } catch (error) {
             console.error('음성 우울 분석 API 서버 요청 오류:', error);
+            setIsGetAudioResult(false);
             throw error;
         }
     };
 
     useEffect(()=> {
-        if (chatbotanswer && textEmotion && textDepress && textDepressValue && textResult) {
+        if (chatbotanswer && textEmotion && textDepress && textResult) {
             console.log('useEffect 실행')
             console.log('chatbotanswer : ', chatbotanswer)
             console.log('textEmotion : ', textEmotion)
@@ -324,7 +343,7 @@ export default function Write({ note, setNote, totalDepressValue, setTotalDepres
         } else {
             console.log('useEffect 실행 안됩니다 addNote() 실행 안됨')
         }
-    }, [chatbotanswer, textEmotion, textDepress, textDepressValue, textResult])
+    }, [chatbotanswer, textEmotion, textDepress, textResult])
 
     const handlePress = async (text) => {
         console.log('================================================')
@@ -348,9 +367,11 @@ export default function Write({ note, setNote, totalDepressValue, setTotalDepres
     };
 
     const saveAudioNote = async() => {
+        setIsLoading(true);
         console.log('saveAudioNote 함수 실행')
         const { transcript, response } = await stopRecording();
         await handlePress(transcript);
+        setIsLoading(false);
         console.log('saveAudioNote 함수 종료\n=======================')
     }
       
@@ -392,33 +413,63 @@ export default function Write({ note, setNote, totalDepressValue, setTotalDepres
         }
     };
 
-
     const [sound, setSound] = useState(null);
+    const [isAudioPlay, setIsAudioPlay] = useState(false);
+    const [isAudioPause, setIsAudioPause] = useState(false);
+    const [playbackPosition, setPlaybackPosition] = useState(null);
     
     const playAudio = async (audioFileURL) => {
-        setIsAudioPlay(true);
-        if (sound !== null) {
-          await sound.unloadAsync();
-        }
-        const newSound = new Audio.Sound();
-        await newSound.loadAsync({ uri: audioFileURL });
-        setSound(newSound);
-        console.log('녹음파일 재생 !!');
-        await newSound.replayAsync();
-        console.log('녹음파일 재생 종료 !!');
-        setIsAudioPlay(false);
-      };
-      
-    const pauseAudio = async () => {
-        console.log('녹음파일 일시정지 함수 실행');
-        if (sound !== null) {
-            console.log('녹음파일 일시정지');
-            setIsAudioPlay(false);
-            await sound.pauseAsync();
+        try {
+            setIsAudioPlay(true);
+            if (sound !== null) {
+                await sound.unloadAsync();
+            }
+            const newSound = new Audio.Sound();
+            await newSound.loadAsync({ uri: audioFileURL });
+            console.log('녹음파일 재생 !!');
+            await newSound.playAsync();
+            console.log('녹음파일 재생 종료 !!');
+            setSound(newSound);
+        } catch (error) {
+            console.log('오디오 재생 중 에러 발생:', error);
         }
     };
       
+    const pauseAudio = async () => {
+        try {
+            console.log('녹음파일 일시정지 함수 실행');
+            setIsAudioPlay(false);
+            setIsAudioPause(true);
+            const status = await sound.getStatusAsync();
+            setPlaybackPosition(status.positionMillis);
+            await sound.pauseAsync();
+        } catch (error) {
+            console.log('오디오 일시정지 중 에러 발생:', error);
+        }
+    };
+      
+    const resumeAudio = async () => {
+        try {
+            console.log('녹음파일 다시 재생 함수 실행');
+            setIsAudioPlay(true);
+            setIsAudioPause(false);
+            await sound.playFromPositionAsync(playbackPosition);
+        } catch (error) {
+            console.log('오디오 다시 재생 중 에러 발생:', error);
+        }
+    };
 
+    const initAudio = async() => {
+        if (sound !== null) {
+            await sound.stopAsync();
+            await sound.unloadAsync();
+        }
+        setSound(null);
+        setIsAudioPlay(false);
+        setIsAudioPause(false);
+        setPlaybackPosition(null);
+    }
+      
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor:'#fcfdfe' }}>
             {
@@ -430,7 +481,10 @@ export default function Write({ note, setNote, totalDepressValue, setTotalDepres
                         note={note} 
                         playAudio={playAudio}
                         pauseAudio={pauseAudio}
+                        resumeAudio={resumeAudio}
+                        initAudio={initAudio}
                         isAudioPlay={isAudioPlay}
+                        isAudioPause={isAudioPause}
                         setIsAudioPlay={setIsAudioPlay}
                         totalDepressValue={totalDepressValue}
                         setTotalDepressValue={setTotalDepressValue}
@@ -441,9 +495,11 @@ export default function Write({ note, setNote, totalDepressValue, setTotalDepres
                     <Pressable style={{ flex: 1 }} onPress={()=> Keyboard.dismiss()}>
 
                         <View style={{ borderBottomColor: '#416753', borderBottomWidth: 1,  }}>
-                            <Text style={styles.header}>오늘의 일기 작성</Text>
+                            <Text style={styles.header}>오늘 있었던 일을 말해 주세요!</Text>
                         </View>
 
+                        {isRecording && <Recording />}
+                        {isLoading && <Roading isGetGoogleSTT={isGetGoogleSTT} isGetAudioResult={isGetAudioResult} isGetTextResult={isGetTextResult} isGetChatResult={isGetChatResult} isLoading={isLoading} isRecording={isRecording} />}
                         <SwipeListView
                             data={note}
                             renderItem={ data => (
@@ -470,8 +526,10 @@ export default function Write({ note, setNote, totalDepressValue, setTotalDepres
                                 </View>
                             )}
                             rightOpenValue={-70}
-                            style={{marginBottom: 50}}
-                        />
+                            style={{marginBottom: 50}}>
+
+                            
+                        </SwipeListView>
 
                         
                         <View style={styles.writeDiary}>
@@ -509,7 +567,51 @@ export default function Write({ note, setNote, totalDepressValue, setTotalDepres
     )
 }
 
-// Detail 페이지
+function Recording(){
+    return(
+        <View style={roadingstyles.container}>
+            <View style={ {flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <Icon name='radio-button-on' size={60} color='red' />
+                <Text style={roadingstyles.text}>녹음중 입니다...</Text>
+                <Text style={roadingstyles.text}>녹음을 종료하시려면 아이콘을 한번더 터치해주세요.</Text>
+            </View>
+        </View>
+    )
+}
+
+function Roading({ isGetGoogleSTT, isGetAudioResult, isGetTextResult, isGetChatResult, isRecording }){
+
+    return(
+        <View style={roadingstyles.container}>
+            <View style={ {flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <Image 
+                    source={require('./../assets/loading.gif')}
+                    style={{ width: 150, height: 150, opacity: 1}}
+                />
+                { isGetGoogleSTT && <Text style={[roadingstyles.text, { opacity: 1 }]}>텍스트로 변환중입니다...</Text> }
+                { isGetAudioResult && <Text style={[roadingstyles.text, { opacity: 1 }]}>음성 분석중입니다....</Text> }
+                { isGetChatResult && <Text style={[roadingstyles.text, { opacity: 1 }]}>챗봇이 응답중입니다...</Text> }
+                { isGetTextResult && <Text style={[roadingstyles.text, { opacity: 1 }]}>텍스트 분석중입니다....</Text> }
+            </View>
+        </View>
+    )
+}
+
+const roadingstyles = StyleSheet.create({
+    container: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(128, 128, 128, 0.8)',
+        zIndex: 1,
+        marginVertical: 180,
+    },
+
+    text: {
+        color: 'white',
+        fontSize: 18
+    }
+});
+
+/////////////////////Detail 페이지///////////////////////
 function Detail(props){
     const chartConfig = {
         backgroundGradientFrom: "#f9f9f9",
@@ -530,6 +632,7 @@ function Detail(props){
     const textemotionArray = selectedNote[props.selectedNoteKey].textEmotion
     const textDepressArray = selectedNote[props.selectedNoteKey].textDepress
     const textDepressValue = selectedNote[props.selectedNoteKey].textDepressValue
+    const audioEmotion = selectedNote[props.selectedNoteKey].audioDepress.emotion
     const audioDepressValue = selectedNote[props.selectedNoteKey].audioDepress.sigmoid_value[0][0]
     const totalDepressValuetemp = ((textDepressValue*0.8)+(audioDepressValue*0.2)) * 100
     
@@ -572,7 +675,7 @@ function Detail(props){
     return (
         <SafeAreaView style={{ flex: 1 , backgroundColor: 'white' }}>
             <View style={{ flexDirection: 'row'}}>
-                <TouchableOpacity style={styles.backbtn} onPress={()=>{props.setSelectedNoteKey(null)}}>
+                <TouchableOpacity style={styles.backbtn} onPress={()=>{props.setSelectedNoteKey(null); props.initAudio()}}>
                     <Icon name='chevron-back-outline' size={40} color='#576F72' />
                 </TouchableOpacity>
                 <Text style={styles.detailHeader}>일기 상세 페이지</Text>
@@ -583,20 +686,27 @@ function Detail(props){
                 <Text selectable={true}>{selectedNote[props.selectedNoteKey].text}</Text>
                     {
                         selectedNote[props.selectedNoteKey].audio ? (
-                            props.isAudioPlay ? (
+                            props.isAudioPause ? (
                                 <View style={styles.playaudio}>
-                                    <TouchableOpacity onPress={()=>{ props.pauseAudio }}>
-                                        <Icon name='md-pause' size={35} color='#576F72' />
-                                    </TouchableOpacity>
+                                  <TouchableOpacity onPress={() => { props.resumeAudio() }}>
+                                    <Icon name='ios-play' size={35} color='#576F72' />
+                                  </TouchableOpacity>
                                 </View>
-                            ) : (
-                                <View style={styles.playaudio}>
-                                    <TouchableOpacity onPress={()=>{props.playAudio(selectedNote[props.selectedNoteKey].audio.file)}}>
-                                        <Icon name='ios-play' size={35} color='#576F72' />
-                                    </TouchableOpacity>
-                                </View>
-                            )
-                            
+                                ) : (
+                                    props.isAudioPlay ? (
+                                        <View style={styles.playaudio}>
+                                            <TouchableOpacity onPress={() => { props.pauseAudio() }}>
+                                            <Icon name='md-pause' size={35} color='#576F72' />
+                                            </TouchableOpacity>
+                                        </View>
+                                    ) : (
+                                        <View style={styles.playaudio}>
+                                            <TouchableOpacity onPress={() => { props.playAudio(selectedNote[props.selectedNoteKey].audio.file) }}>
+                                            <Icon name='ios-play' size={35} color='#576F72' />
+                                            </TouchableOpacity>
+                                        </View>
+                                    )
+                                )  
                         ) : (
                             null
                         )
@@ -615,18 +725,18 @@ function Detail(props){
                                 .reduce((uniqueAnswers, currentAnswer) => {
                                     const isAmbiguous = uniqueAnswers.some((a) => a.situation === '모호함');
                                     if (isAmbiguous && currentAnswer.situation === '모호함') {
-                                    return uniqueAnswers;
+                                        return uniqueAnswers;
                                     }
                                     if (
                                     (!uniqueAnswers.some((a) => a.answer === currentAnswer.answer) ||
                                         (isAmbiguous && currentAnswer.situation !== '모호함')) &&
-                                    currentAnswer.softmax_value > 0.07 // softmax_value가 0.15 이상인 경우에만 추가
+                                        currentAnswer.softmax_value > 0.07 
                                     ) {
-                                    uniqueAnswers.push(currentAnswer.answer);
+                                        uniqueAnswers.push(currentAnswer.answer);
                                     }
-                                    return uniqueAnswers;
+                                        return uniqueAnswers;
                                 }, [])
-                                .slice(0, Math.min(chatbotanswerArray.length, 3)) // 배열 길이가 2 이상이면 최대 2개의 요소만 선택
+                                .slice(0, Math.min(chatbotanswerArray.length, 3)) 
                                 .join(' ') || "긍정적인 내용인 것 같아서 위로해 드릴게 없네요!"
                             }
                         </Text>
@@ -640,12 +750,15 @@ function Detail(props){
                             if (count === Math.max(...Object.values(textemotionCounts))) {
                                 return (
                                 <Text key={index}>
-                                    {emotion}
+                                    {emotion}, {audioEmotion}
                                 </Text>
                                 );
                             }
-                            return null; // 다른 감정은 표시하지 않음
+                                return null; // 다른 감정은 표시하지 않음
                             })
+                        }
+                        {
+
                         }
                     </View>
 
@@ -679,8 +792,6 @@ function Detail(props){
                             )
                         }
                     </View>
-
-                    
 
                 </View>
             </ScrollView>
