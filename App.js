@@ -1,13 +1,9 @@
-import { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
 import { StatusBar } from 'expo-status-bar';
 import Statistics from './components/Statistics';
 import Selfcare from './components/Selfcare';
-import Tabs from './components/Tab';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Write from './components/Write';
 
@@ -56,9 +52,3 @@ export default function App() {
     </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-
-  },
-});

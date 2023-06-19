@@ -1,9 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
-import { StatusBar } from 'expo-status-bar';
+import { useEffect, useState } from 'react';
 import { StyleSheet,
             Text,
             View,
-            Button,
             TextInput,
             Keyboard,
             Pressable,
@@ -12,18 +10,13 @@ import { StyleSheet,
             Alert,
             TouchableHighlight,
             SafeAreaView,
-            KeyboardEvent,
             Dimensions } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {SwipeListView} from 'react-native-swipe-list-view';
 import axios from 'axios';
 import styles from './Writestyle';
 import { Audio } from 'expo-av';
-import * as FileSystem from 'expo-file-system';
-import { StackedBarChart } from 'react-native-chart-kit';
 import { Image } from 'expo-image';
 
 //GOOGLE STT API 설정
@@ -34,13 +27,13 @@ const LANGUAGE = 'ko-KR';
 //모델 돌리는 API 서버 설정
 const STORAGE_KEY = "@note";
 
-const CHATBOT_URL_LOCAL_ADDRESS = 'http://172.20.10.7:5000';
+const CHATBOT_URL_LOCAL_ADDRESS = 'http://172.20.10.7:80';
 
-const GOOGLE_STT_API_ADDRESS = 'http://172.20.10.7:5000/audio';
+const GOOGLE_STT_API_ADDRESS = CHATBOT_URL_LOCAL_ADDRESS+'/audio'
 
-const TEXTDEPRESS_URL_LOCAL_ADDRESS = "https://2331-34-91-10-137.ngrok-free.app";
+const TEXTDEPRESS_URL_LOCAL_ADDRESS = "https://ccd0-35-188-117-31.ngrok-free.app";
 
-const AUDIODEPRESS_URL_LOCAL_ADDRESS = 'http://5305-121-174-96-133.ngrok-free.app';
+const AUDIODEPRESS_URL_LOCAL_ADDRESS = 'http://754e-121-174-96-133.ngrok-free.app';
 
 
 export default function Write({ note, setNote, totalDepressValue, setTotalDepressValue }){
@@ -60,8 +53,6 @@ export default function Write({ note, setNote, totalDepressValue, setTotalDepres
     const [textResult, setTextResult] = useState();
 
     const [isKeyboardVisible, setKeyboardVisible] = useState(false);
-
-    const swipeListViewRef = useRef(null);
 
     const handleKeyboardDidShow = () => {
         setKeyboardVisible(true);
@@ -594,7 +585,7 @@ function Roading({ isGetGoogleSTT, isGetAudioResult, isGetTextResult, isGetChatR
                 { isGetTextResult && <Text style={[roadingstyles.text, { opacity: 1 }]}>텍스트 분석중입니다....</Text> }
             </View>
         </View>
-    )
+    ) 
 }
 
 const roadingstyles = StyleSheet.create({
@@ -766,7 +757,7 @@ function Detail(props){
                     <View style={styles.detailChatbotSituation}>
                         <Text>우울감 정도: {totalDepressValuetemp.toFixed(2)}%</Text>
                         {
-                            (textDepressValue >= 0.4) ? (
+                            (textDepressValue >= 0.6) ? (
                                 <>
                                 <Text>우울 양상을 보이는 문장의 비율이 높습니다!</Text>
                                     <View style={chartstyles.container}>

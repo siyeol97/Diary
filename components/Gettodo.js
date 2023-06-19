@@ -1,14 +1,15 @@
-import { View, Button, Text, Linking, StyleSheet } from 'react-native';
+import { View, Button, Text, Linking, StyleSheet, ScrollView } from 'react-native';
 import axios from 'axios';
 import { useState } from 'react';
 
-export default function Getplaylist({ note }){
-    const [playlist, setPlaylist] = useState('');
+export default function Gettodo({ note }){
+
+    const [todolist, setTodolist] = useState('');
     const [depressName, setDepressName] = useState();
 
     console.log(note);
-    const GETPLAYLIST_URL_LOCAL_ADDRESS = "https://ccd0-35-188-117-31.ngrok-free.app/playlist"
-    
+    const GETTODOLIST_URL_LOCAL_ADDRESS = "https://ccd0-35-188-117-31.ngrok-free.app/todo"
+
     const depressList = note[0][Object.keys(note[0])[0]].textDepress;
 
     const countEmotions = (depressList) => {
@@ -36,60 +37,58 @@ export default function Getplaylist({ note }){
         return mostFrequentEmotions[Math.floor(Math.random() * mostFrequentEmotions.length)];
     };
 
-
-    const getPlaylistURL = async(depressName) => {
-        console.log('getPlaylistURL 함수 실행 : ', depressName);
+    const getTodolistURL = async(depressName) => {
+        console.log('getTodolistURL 함수 실행 : ', depressName);
         
         try {
-            const url = GETPLAYLIST_URL_LOCAL_ADDRESS;
+            const url = GETTODOLIST_URL_LOCAL_ADDRESS;
             
             const response = await axios.post(url, { depressName: depressName });
-            const playlistURL = response.data;
+            const todolistURL = response.data;
             
             console.log('================================================')
-            console.log('playlistURL : ', playlistURL);
+            console.log('todolistURL : ', todolistURL);
             console.log('================================================')
-            setPlaylist(playlistURL.user_playlist);
-            return playlistURL;
+            setTodolist(todolistURL.todo);
+            return todolistURL;
 
         } catch (error) {
             console.error('플레이리스트 가져오기 실패 :', error);
             return;
         }
     }
-    
-    const getPlaylist = ()=> {
+
+    const getTodolist = ()=> {
         const depressName = getMostFrequentEmotion(depressList);
-        getPlaylistURL(depressName);
+        getTodolistURL(depressName);
         setDepressName(depressName);
     }
 
     return (
-        <View>
+        <ScrollView style={{ marginBottom: 107 }}>
             <View style={styles.topEmotionView}>
                 <Text style={[styles.text, {marginBottom: 8, marginTop: 17}]}>오늘의 대표 우울 양상</Text>
                 <Text style={[styles.text, {marginTop: 15}]}>{depressName}</Text>
             </View>
 
-            <View style={styles.playListView}>
-                <Text style={[styles.text, {marginBottom: 8, marginTop: 17}]}>플레이리스트</Text>
+            <View style={styles.todoListView}>
+                <Text style={[styles.text, {marginBottom: 8, marginTop: 17}]}>To Do List</Text>
                 {
                     depressName ? (
-                        <Text style={[styles.text, {marginTop: 15}]} onPress={() => Linking.openURL(playlist)}>{depressName}에 어울리는 플리보러 가기!</Text>
+                        <Text style={[styles.text, {marginTop: 15, marginBottom:10, fontSize: 15, paddingHorizontal: 10, textAlign:'left'}]}>{todolist}</Text>
                     ) : (
-                        <Text style={[styles.text, {marginTop: 15}]}>먼저 플레이 리스트를 가져와 주세요 !</Text>
+                        <Text style={[styles.text, {marginTop: 15, marginBottom: 10}]}>먼저 To Do List를 가져와 주세요 !</Text>
                     )
                 }
-                
             </View>
 
             <View style={styles.getListbtn}>
                 <Button 
-                    onPress={getPlaylist}
-                    title='추천 플레이 리스트 가져오기 !'
+                    onPress={getTodolist}
+                    title='할일 추천 리스트 가져오기 !'
                 />
             </View>
-        </View>
+        </ScrollView>
     )
 }
 const styles = StyleSheet.create({
@@ -105,7 +104,8 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.5,
         shadowRadius: 2,
         backgroundColor: 'lightgrey',
-        marginHorizontal: 30
+        marginHorizontal: 30,
+        marginBottom: 15
     },
 
     topEmotionView: {
@@ -122,11 +122,10 @@ const styles = StyleSheet.create({
         shadowRadius: 2,
     },
 
-    playListView: {
+    todoListView: {
         marginBottom: 30,
         backgroundColor: '#576F72',
         marginHorizontal: 30,
-        height: 100,
         borderWidth: 1,
         borderColor: '#576F72',
         borderRadius: 10,

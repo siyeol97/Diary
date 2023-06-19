@@ -1,18 +1,15 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Dimensions, SafeAreaView,
   ScrollView,
-  StatusBar, StyleSheet, useColorScheme,
-  LayoutAnimation,
+  StyleSheet,
   View,
-  Easing,
   Text
 } from 'react-native';
-import { LineChart, ProgressChart, PieChart } from 'react-native-chart-kit';
-import { Colors } from 'react-native/Libraries/NewAppScreen';
+import { LineChart, PieChart } from 'react-native-chart-kit';
 import { useEmotionData } from './emotionData';
 
-export default function Statistics({ note, setNote, totalDepressValue, setTotalDepressValue }){
+export default function Statistics({ note }){
     const screenWidth = Dimensions.get('window').width
     const chartConfig = {
         backgroundGradientFrom: "#f9f9f9",
@@ -28,7 +25,6 @@ export default function Statistics({ note, setNote, totalDepressValue, setTotalD
 
     const [emotionData, setEmotionData] = useEmotionData();
     const [textDepressCount, setTextDepressCount] = useState({});
-    const [textDepressValue, setTextDepressValue] = useState();
     const [depressData, setDepressData] = useState({
         labels: ["02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15"],
         datasets: [
@@ -56,7 +52,7 @@ export default function Statistics({ note, setNote, totalDepressValue, setTotalD
                 }
             })
         })
-        //console.log('7가지 감정 카운팅 : ', t_EmotionCount)
+        console.log('7가지 감정 카운팅 : ', t_EmotionCount)
         newEmotionData.forEach((emotionObj) => {
             const emotionName = emotionObj.name;
             if (t_EmotionCount.hasOwnProperty(emotionName)) {
@@ -70,7 +66,6 @@ export default function Statistics({ note, setNote, totalDepressValue, setTotalD
     const getTextDepress = ()=> {
         const depress_state = ['감정조절이상', '불면', '분노', '불안', '초조', '슬픔', '외로움', '우울', '의욕상실', '무기력', '자살', '자존감저하', '절망', '죄책감', '집중력저하', '피로', '식욕저하', '식욕증가', '일상'];
         let t_DepressCount = {}
-        //let newTextDepressData = {...textDepressData}
     
         for(var i=0; i < depress_state.length; i++){
             t_DepressCount[depress_state[i]] = 0;
@@ -85,7 +80,6 @@ export default function Statistics({ note, setNote, totalDepressValue, setTotalD
             })
         })
         setTextDepressCount(t_DepressCount);
-        //console.log('텍스트 우울 종류 카운팅 : ', t_DepressCount);
     }
 
     const getDepressValue = ()=> {
@@ -106,28 +100,24 @@ export default function Statistics({ note, setNote, totalDepressValue, setTotalD
             totalDepressValue.push(tempValue);
         })
         console.log('textDepressValue : ', textDepressValue);
-        console.log('labelDate : ', labelDate);
+        //console.log('labelDate : ', labelDate);
         console.log('audioDepressValue : ', audioDepressValue);
         console.log('totalDepressValue : ', totalDepressValue);
 
         const updatedDepressData = {
             //수정
-            labels: ["02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15"],
+            labels: ["06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19"],
             datasets: [
                 {
-                    data: [0.343435, 0.58347, 0.23857, 0.8757632, 0.66452, 0.283287327, 0.799657154083252, 0.6028970554471016, 0.4113091230392456, 0.4045874799117446, 0.7197580099105835, 0.7152678608894348, 0.7447169351577758, 0.46742027997970576],
+                    data: [0.463435, 0.58347, 0.65857, 0.8757632, 0.66452, 0.593287327, 0.458, ...totalDepressValue],
                 },
             ],
         };
           
         setDepressData(updatedDepressData);
         console.log(updatedDepressData);
+        console.log(updatedDepressData.datasets)
     }
-    
-
-
-
-
     
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: "#F9F9F9" }}>
@@ -164,6 +154,9 @@ export default function Statistics({ note, setNote, totalDepressValue, setTotalD
                         bezier
                     />
                 </View>
+
+                <Text>높은 우울감 수치가 지속됩니다 !</Text>
+                <Text>Selfcare 탭의 우울 척도 검사를 권장합니다.</Text>
     
             </ScrollView>
         </SafeAreaView>

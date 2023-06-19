@@ -1,27 +1,29 @@
 import { useEffect, useState } from 'react';
-import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Button, TouchableOpacity, ScrollView } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Getplaylist from './Getplaylist';
+import Gettodo from './Gettodo';
 
 export default function Selfcare({ note }){
 
     const [isPhq, setIsPhq] = useState(false);
     const [isMusic, setIsMusic] = useState(false);
+    const [isTodo, setIsTodo] = useState(false);
 
     const goBack = ()=> {
         if(isPhq){
             setIsPhq(false);
         } else if(isMusic) {
             setIsMusic(false);
+        } else if(isTodo) {
+            setIsTodo(false);
         }
     }
 
     useEffect(()=> {
         setIsPhq(false);
         setIsMusic(false);
+        setIsTodo(false);
     }, [])
 
     const goPhq = ()=> {
@@ -32,12 +34,20 @@ export default function Selfcare({ note }){
         setIsMusic(true);
     }
 
+    const goTodo = () => {
+        setIsTodo(true);
+    }
+
     if (isPhq) {
         return <Phq goBack={goBack} />
     }
 
     if (isMusic) {
         return <Music goBack={goBack} note={note} />
+    }
+
+    if (isTodo) {
+        return <Todo goBack={goBack} note={note} />
     }
 
     return (
@@ -56,12 +66,33 @@ export default function Selfcare({ note }){
                 style={styles.menu}>
                 <Text style={[styles.menuText, {color: 'white'}]}>음악 추천 받기 !</Text>
             </TouchableOpacity>
+
+            <TouchableOpacity
+                onPress={()=>goTodo()}
+                activeOpacity={0.7}
+                style={styles.menu}>
+                <Text style={[styles.menuText, {color: 'white'}]}>할일 추천 받기 !</Text>
+            </TouchableOpacity>
+        </View>
+    )
+}
+
+function Todo({ goBack, note }){
+    return(
+        <View>
+            <View>
+                <TouchableOpacity style={styles.backbtn} onPress={()=>{goBack()}}>
+                        <Icon name='chevron-back-outline' size={40} color='#576F72' />
+                </TouchableOpacity>
+                <Text style={styles.playlistheader}>오늘의 대표감정에 따라 퀘스트를 추천해 드려요!</Text>
+            </View>
+            
+            <Gettodo note={note} />
         </View>
     )
 }
 
 function Phq({ goBack }){
-
     return(
         <View>
             <View style={{ flexDirection: 'row' }}>
@@ -74,7 +105,6 @@ function Phq({ goBack }){
         </View>
     )
 }
-
 
 //PHQ-9 검사 페이지
 function Question(){
