@@ -8,7 +8,7 @@ export default function Gettodo({ note }){
     const [depressName, setDepressName] = useState();
 
     console.log(note);
-    const GETTODOLIST_URL_LOCAL_ADDRESS = "https://ccd0-35-188-117-31.ngrok-free.app/todo"
+    const GETTODOLIST_URL_LOCAL_ADDRESS = "https://e7ad-35-185-42-206.ngrok-free.app/todo"
 
     const depressList = note[0][Object.keys(note[0])[0]].textDepress;
 

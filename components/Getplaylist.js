@@ -7,7 +7,7 @@ export default function Getplaylist({ note }){
     const [depressName, setDepressName] = useState();
 
     console.log(note);
-    const GETPLAYLIST_URL_LOCAL_ADDRESS = "https://ccd0-35-188-117-31.ngrok-free.app/playlist"
+    const GETPLAYLIST_URL_LOCAL_ADDRESS = "https://e7ad-35-185-42-206.ngrok-free.app/playlist"
     
     const depressList = note[0][Object.keys(note[0])[0]].textDepress;
 

@@ -27,13 +27,13 @@ const LANGUAGE = 'ko-KR';
 //모델 돌리는 API 서버 설정
 const STORAGE_KEY = "@note";
 
-const CHATBOT_URL_LOCAL_ADDRESS = 'http://172.20.10.7:80';
+const CHATBOT_URL_LOCAL_ADDRESS = 'http://192.168.0.90:80';
 
 const GOOGLE_STT_API_ADDRESS = CHATBOT_URL_LOCAL_ADDRESS+'/audio'
 
-const TEXTDEPRESS_URL_LOCAL_ADDRESS = "https://ccd0-35-188-117-31.ngrok-free.app";
+const TEXTDEPRESS_URL_LOCAL_ADDRESS = "https://e7ad-35-185-42-206.ngrok-free.app";
 
-const AUDIODEPRESS_URL_LOCAL_ADDRESS = 'http://754e-121-174-96-133.ngrok-free.app';
+const AUDIODEPRESS_URL_LOCAL_ADDRESS = 'http://257e-175-214-183-100.ngrok-free.app';
 
 
 export default function Write({ note, setNote, totalDepressValue, setTotalDepressValue }){
