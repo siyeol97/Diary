@@ -1,13 +1,13 @@
 {
   "type": "service_account",
-  "project_id": "leesy-project",
-  "private_key_id": "19064384399c6b02386e72000c12d17c931cf7a8",
-  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQD0wzNdDTjXynPb\nTPSOPCCP53rH2E6Xx6CqukFqW70EZn+48fYuD11M4vleU+XM6YJ1qEbnTZ8bE8uu\nUsudYkcuH0VumoXyukm6E7lV9TGS3AQ994EQf7CEcE2UWlxRmMXYmKlM1elqZ9UG\njqrwvd9wv/YqZBQ42IVYA6R9YiYY2k0pooAK71ioUrLs6b/ZfISwaaM9ZdgxZvh8\nI0sN2FVHR7T9vroex0T4VcJYltTFU+CMtDDQp8tST9Bx+FogkE7ZEK8YgsI0/yax\nQIClgGjMLSDIaKjzJnQUm/M55oVFFwYu7bDBe4+A7PZlZujGAwz8xX7wNc1MIuJz\nddMq0JJLAgMBAAECggEAPiH5PXNYTSsm+vIPmLW5vF4SJH4MAWqbJgvPBE1Sb7YH\nUS8XA71BvX1WuTPJ/5j9VZnImfnx3EFLsK5y4rpqgFJO4VNXknTot1Q/dYsfMP0q\nFILqYAJSEGSjxPelPM9v1dp3C7q3nJvMD3SS/zbr7CbGuh8apQ2N1/hgvrV2H1N4\nMGXRqpJquEPwrYOqJzRbCICVdhrOab73GPYrIr4u/vSOydcehuvZ0jERcl9wkble\nKQM6dELfesVxnmP5zdai3py/UFJYBOOSGwB4ge9j8C3i/sJCqYTX8Z31GD+p0bbh\nIVTI+48qU4dZCdYt0Hnbu33bbJcIJknOB7BOmUDL0QKBgQD8aUo3dJFHQaQxgiiH\nJWPh3JJNjUFEvRd6BLEsASc6eb+Cm7yShi1YGt8UaeQXA3C/E7RKRcGRQKbWJZ8y\nnKkkKGVbsPzgQ3byWmwAWsqoUoMREpSUZgFTEiqzGBjy4XRwtfTcbG00IH9aXk2F\n+KShXJdGovkS99qo18jhhQpjkQKBgQD4PhI4v0xAhgomFUcV5e/2WOXqTwihoikW\nnXcPLam+4aKq+KgrJmrnaNFTvsBcQeZVTP/whZHxoOI45BA2g3kaGSK0tVow9N6t\nM7LNNZ9bVmfeKrXr2peNt7Z6KgYbEtx3uX6bSMBPv4e0zKEyYcgxfCn1czMhPP5K\nCOSyiInyGwKBgD/jNpHKw2rRxolxdGigoiNs/Or8MeUAJ40O2vlUYWV/o2WfnZ9I\nrvl587TrCHx6tnLmvd9+wHvPbWsOorjgxj8MqnsG1Tq+WMEG+gcs89ae6+XKWikl\nmHg6ROyH0OjI//v3Uj7ogsuK3jE1ZVHfmWvuT6vlXD3c1k+eLo5GalbBAoGBAJFJ\nIrj7nNEWodHwGg6C6JIxLT6YyuBuW8XUmt3TR8ljnSSbKzE15tNQ0VJGDabxGrFJ\nw3Ete2EDW+MX9zUwdSwFEf7ZNNP6PGj6HOdlPsLiKyAntxk2cgSLRMzy02f8/fNE\nKQkQ5xzFZ9M1ABLQj64GkTgKGB6X5+vEkLS8nJ+JAoGBAOG7z87u/83pDo2LDt0k\nJxThcKzWOy+zKUYb3E9SrRbhOjehi+eGsH/DO7PTmUqNNzg1bOspR0A+mpUkmEd+\nClmBEjfzqGO6rvXhuYag0RJ3sREGGHLXewyvbdMM2ZKndStzG+JRBIo9Von4wCgC\nnGY8nKVwbgaWnDZsr5wfKlpR\n-----END PRIVATE KEY-----\n",
-  "client_email": "final-project@leesy-project.iam.gserviceaccount.com",
-  "client_id": "104113610600509785818",
-  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-  "token_uri": "https://oauth2.googleapis.com/token",
-  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/final-project%40leesy-project.iam.gserviceaccount.com",
+  "project_id": "******",
+  "private_key_id": "****************",
+  "private_key": "-----BEGIN PRIVATE KEY-----\*********************n-----END PRIVATE KEY-----\n",
+  "client_email": "final-project@*********.com",
+  "client_id": "*********",
+  "auth_uri": "https://accounts.google.com/o/********",
+  "token_uri": "https://oauth2.*********",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/*********s",
+  "client_x509_cert_url": "https://www.googleapis.com/******/.com",
   "universe_domain": "googleapis.com"
 }
