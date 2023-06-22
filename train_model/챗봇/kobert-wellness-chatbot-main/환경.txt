@@ -1,0 +1,27 @@
+test.py 파일 테스트 완료한 가상환경 => kogpt_test
+
+(kogpt_test) PS C:\Users\inkwabusan\Downloads\kobert-wellness-chatbot-main> conda list mxnet
+# packages in environment at C:\Users\inkwabusan\anaconda3\envs\kogpt_test:
+#
+# Name                    Version                   Build  Channel
+(kogpt_test) PS C:\Users\inkwabusan\Downloads\kobert-wellness-chatbot-main> conda list transformers
+# packages in environment at C:\Users\inkwabusan\anaconda3\envs\kogpt_test:
+#
+# Name                    Version                   Build  Channel
+transformers              4.6.0                    pypi_0    pypi
+(kogpt_test) PS C:\Users\inkwabusan\Downloads\kobert-wellness-chatbot-main> conda list gluonnlp
+# packages in environment at C:\Users\inkwabusan\anaconda3\envs\kogpt_test:
+#
+# Name                    Version                   Build  Channel
+(kogpt_test) PS C:\Users\inkwabusan\Downloads\kobert-wellness-chatbot-main> conda list torch
+# packages in environment at C:\Users\inkwabusan\anaconda3\envs\kogpt_test:
+#
+# Name                    Version                   Build  Channel
+pytorch-lightning         1.2.10                   pypi_0    pypi
+torch                     1.8.1+cu111              pypi_0    pypi
+torchaudio                0.8.1                    pypi_0    pypi
+torchmetrics              0.2.0                    pypi_0    pypi
+torchvision               0.9.1+cu111              pypi_0    pypi
+
+pip install torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
+pip install transformers==4.6.0
