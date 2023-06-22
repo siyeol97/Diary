@@ -2,7 +2,7 @@
   "type": "service_account",
   "project_id": "******",
   "private_key_id": "****************",
-  "private_key": "-----BEGIN PRIVATE KEY-----*********************n-----END PRIVATE KEY-----\n",
+  "private_key": "-----BEGIN PRIVATE KEY-----***********************n-----END PRIVATE KEY-----\n",
   "client_email": "final-project@*********.com",
   "client_id": "*********",
   "auth_uri": "https://accounts.google.com/o/********",
