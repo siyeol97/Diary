@@ -27,7 +27,7 @@ const LANGUAGE = 'ko-KR';
 //모델 돌리는 API 서버 설정
 const STORAGE_KEY = "@note";
 
-const CHATBOT_URL_LOCAL_ADDRESS = 'http://192.168.0.90:80';
+const CHATBOT_URL_LOCAL_ADDRESS = localAdress;
 
 const GOOGLE_STT_API_ADDRESS = CHATBOT_URL_LOCAL_ADDRESS+'/audio'
 
@@ -74,12 +74,9 @@ export default function Write({ note, setNote, totalDepressValue, setTotalDepres
 
 
     useEffect(()=>{
-        console.log('Write 실행')
         loadNote();
-        
     }, [])
 
-    //const [note, setNote] = useState([]);
 
     const saveNote = async (toSave) => {
         await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(toSave))
@@ -92,10 +89,7 @@ export default function Write({ note, setNote, totalDepressValue, setTotalDepres
         if (parsedNote === null) {
             setNote([]);
         } else {
-            console.log('======================일기 데이터 전부 불러오기========================')
-            console.log(parsedNote);
             setNote(parsedNote);
-            console.log('======================일기 데이터 전부 불러오기 완료========================')
         }
     };
 
@@ -142,7 +136,6 @@ export default function Write({ note, setNote, totalDepressValue, setTotalDepres
     
     
     const stopRecording = async() => {
-        console.log('stopRecording 함수 시작!!\n===========================')
         await recording.stopAndUnloadAsync();
         setIsRecording(false);
       
@@ -155,24 +148,18 @@ export default function Write({ note, setNote, totalDepressValue, setTotalDepres
           duration: getDurationFormatted(status.durationMillis),
           status : status
         }
-        console.log('audio 객체 생성 -> ', audio);
         const transcript = await getTranscription(audio);
         const audioDepress = await getAudioDepress(audio);
 
-        console.log('transcript : ', transcript)
-        console.log('audioDepress : ', audioDepress)
         setText(transcript);
         setAudioData(audio);
         setAudioDepress(audioDepress);
         setRecording();
-        console.log('audio 객체 저장 성공')
-        console.log('Recording 완료');
         return { transcript, audioDepress };
     }
 
     //Flask api 서버로 보냄, GOOGLE STT API 요청
     const getTranscription = async (audio) => {
-        console.log('구글 API 요청 보냄');
         setIsGetGoogleSTT(true);
         const apiUrl = GOOGLE_STT_API_ADDRESS; // Flask API 서버의 업로드 엔드포인트 URL
 
@@ -215,10 +202,8 @@ export default function Write({ note, setNote, totalDepressValue, setTotalDepres
             linearPCMIsFloat: false,
         },
     };
-//====================================================
 
     const addNote = async ()=> {
-        console.log('addNote 함수 실행')
         if(text === ""){
           return
         }
@@ -236,13 +221,11 @@ export default function Write({ note, setNote, totalDepressValue, setTotalDepres
         setAudioDepress();
         setTextDepressValue();
         setTextResult() ;
-        console.log('addNote 함수 종료')
     }
 
     // KoBERT 챗봇 응답
     const doKobert = async (text) => {
         setIsGetChatResult(true);
-        console.log('kobert API 서버 실행 :', text)
         try {
             const url = CHATBOT_URL_LOCAL_ADDRESS;
             const user_input = text;
@@ -256,10 +239,6 @@ export default function Write({ note, setNote, totalDepressValue, setTotalDepres
                     softmax_value: item.softmax_value
                 };
             });
-            
-            console.log('================================================')
-            console.log('chatAnswer : ', chatAnswer);
-            console.log('================================================')
             setIsGetChatResult(false);
 
             return chatAnswer;
@@ -282,9 +261,6 @@ export default function Write({ note, setNote, totalDepressValue, setTotalDepres
             const response = await axios.post(url, { user_input: user_input });
             const depress = response.data;
             
-            console.log('================================================')
-            console.log('depress : ', depress);
-            console.log('================================================')
             //depress = {'emotion_list' : emotion, 'depress_list' : depress[0], 'depress_value' : depress[1]}
             setIsGetTextResult(false);
             return depress;
@@ -311,7 +287,6 @@ export default function Write({ note, setNote, totalDepressValue, setTotalDepres
             })
 
             const response = await axios.post(apiUrl, formData);
-            console.log('오디오 우울 분석 결과 : ', response)
             setIsGetAudioResult(false);
             return response.data;
         } catch (error) {
@@ -323,13 +298,6 @@ export default function Write({ note, setNote, totalDepressValue, setTotalDepres
 
     useEffect(()=> {
         if (chatbotanswer && textEmotion && textDepress && textResult) {
-            console.log('useEffect 실행')
-            console.log('chatbotanswer : ', chatbotanswer)
-            console.log('textEmotion : ', textEmotion)
-            console.log('textDepress : ', textDepress)
-            console.log('textDepressValue : ', textDepressValue)
-            console.log('audioDepress : ', audioDepress)
-            console.log('================================================')
             addNote();
         } else {
             console.log('useEffect 실행 안됩니다 addNote() 실행 안됨')
@@ -337,33 +305,21 @@ export default function Write({ note, setNote, totalDepressValue, setTotalDepres
     }, [chatbotanswer, textEmotion, textDepress, textResult])
 
     const handlePress = async (text) => {
-        console.log('================================================')
-        console.log('handlePress 함수 실행')
-        console.log('text : ', text)
-
         const chatAnswer = await doKobert(text);
         const text_depress = await doTextDepress(text);
-
-        console.log('챗봇 응답 : ', chatAnswer)
-        console.log('텍스트 모델 결과 : ', text_depress)
-        console.log('textDepressValue : ', text_depress.depress_value)
 
         setChatbotanswer(chatAnswer);
         setTextEmotion(text_depress.emotion_list);
         setTextDepress(text_depress.depress_list);
         setTextDepressValue(text_depress.depress_value);
         setTextResult(text_depress);
-        console.log('handlePress 함수 종료')
-        console.log('================================================')
     };
 
     const saveAudioNote = async() => {
         setIsLoading(true);
-        console.log('saveAudioNote 함수 실행')
         const { transcript, response } = await stopRecording();
         await handlePress(transcript);
         setIsLoading(false);
-        console.log('saveAudioNote 함수 종료\n=======================')
     }
       
 
@@ -417,9 +373,7 @@ export default function Write({ note, setNote, totalDepressValue, setTotalDepres
             }
             const newSound = new Audio.Sound();
             await newSound.loadAsync({ uri: audioFileURL });
-            console.log('녹음파일 재생 !!');
             await newSound.playAsync();
-            console.log('녹음파일 재생 종료 !!');
             setSound(newSound);
         } catch (error) {
             console.log('오디오 재생 중 에러 발생:', error);
@@ -428,7 +382,6 @@ export default function Write({ note, setNote, totalDepressValue, setTotalDepres
       
     const pauseAudio = async () => {
         try {
-            console.log('녹음파일 일시정지 함수 실행');
             setIsAudioPlay(false);
             setIsAudioPause(true);
             const status = await sound.getStatusAsync();
@@ -441,7 +394,6 @@ export default function Write({ note, setNote, totalDepressValue, setTotalDepres
       
     const resumeAudio = async () => {
         try {
-            console.log('녹음파일 다시 재생 함수 실행');
             setIsAudioPlay(true);
             setIsAudioPause(false);
             await sound.playFromPositionAsync(playbackPosition);
@@ -571,7 +523,6 @@ function Recording(){
 }
 
 function Roading({ isGetGoogleSTT, isGetAudioResult, isGetTextResult, isGetChatResult, isRecording }){
-
     return(
         <View style={roadingstyles.container}>
             <View style={ {flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -656,13 +607,6 @@ function Detail(props){
         props.setTotalDepressValue(totalDepressValuetemp);
     }, [])
     
-    console.log('======================!!!!! 데이터 확인 !!!!!==============================')
-    console.log('KEY : ', props.selectedNoteKey)
-    console.log('데이터 : ', selectedNote[props.selectedNoteKey])
-    console.log('textDepressValue : ', textDepressValue)
-    console.log('textDepressChartdata : ', textDepressChartdata)
-    console.log('totalDepressValuetemp : ', totalDepressValuetemp)
-    console.log('===========================================================================')
     return (
         <SafeAreaView style={{ flex: 1 , backgroundColor: 'white' }}>
             <View style={{ flexDirection: 'row'}}>
