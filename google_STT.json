@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "my_project_id",
+  "private_key_id": "my_project_key",
+  "private_key": "my_private_key",
+  "client_email": "my_email@gmail.com",
+  "client_id": "my_client_id",
+  "auth_uri": "https://accounts.google.com/my_auth_url",
+  "token_uri": "https://oauth2.my_token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/my_provider",
+  "client_x509_cert_url": "https://www.googleapis.com/my_client_cert.com",
+  "universe_domain": "googleapis.com"
+}
